@@ -2,7 +2,7 @@
 // Data — Aakar Kale's portfolio content
 // ====================================================================
 
-window.AK_DATA = {
+export const AK_DATA = {
   name: 'Aakar Kale',
   role: 'Senior Product Manager',
   tagline: 'Ex-founder turned Senior PM, turning ambiguity into outcomes. Shaping the next generation of products with clarity and purpose.',

@@ -1,11 +1,11 @@
 // ====================================================================
 // Sections: About, Work (swipe deck + grid), Experience, Skills, Contact
 // ====================================================================
-
-const { useState: useSt, useEffect: useEf, useRef: useRf, useMemo: useMm } = React;
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { SectionHead } from './chrome.jsx';
 
 // ─── About ───────────────────────────────────────────────────────────
-function About({ data }) {
+export function About({ data }) {
   return (
     <section id="about" data-section="about" data-screen-label="02 About">
       <div className="container">
@@ -45,7 +45,7 @@ function About({ data }) {
 }
 
 // ─── Work — Swipe deck (mobile) + Grid (desktop) ─────────────────────
-function Work({ data, projects, unlocked }) {
+export function Work({ data, projects, unlocked }) {
   const isMobile = useMediaQuery('(max-width: 768px)');
   return (
     <section id="work" data-section="work" data-screen-label="03 Work">
@@ -62,11 +62,11 @@ function Work({ data, projects, unlocked }) {
   );
 }
 
-function useMediaQuery(query) {
-  const [matches, setMatches] = useSt(() =>
+export function useMediaQuery(query) {
+  const [matches, setMatches] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia(query).matches : false
   );
-  useEf(() => {
+  useEffect(() => {
     const mq = window.matchMedia(query);
     const on = () => setMatches(mq.matches);
     mq.addEventListener('change', on);
@@ -75,12 +75,10 @@ function useMediaQuery(query) {
   return matches;
 }
 
-// ─── Swipe Deck (mobile) ─────────────────────────────────────────────
 function SwipeDeck({ projects, unlocked }) {
-  const [idx, setIdx] = useSt(0);
-  const [drag, setDrag] = useSt({ x: 0, y: 0, active: false });
-  const startRef = useRf({ x: 0, y: 0 });
-  const theme = document.documentElement.getAttribute('data-theme');
+  const [idx, setIdx] = useState(0);
+  const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
+  const startRef = useRef({ x: 0, y: 0 });
 
   const list = projects;
   const n = list.length;
@@ -110,7 +108,6 @@ function SwipeDeck({ projects, unlocked }) {
   return (
     <div className="swipe-stage reveal">
       <div className="swipe-deck">
-        {/* back cards (next 2) */}
         {[2, 1].map(off => {
           const p = list[(idx + off) % n];
           return (
@@ -125,7 +122,6 @@ function SwipeDeck({ projects, unlocked }) {
           );
         })}
 
-        {/* top card */}
         <div
           className={`swipe-card swipe-card-top ${drag.flung ? 'swipe-flung' : ''}`}
           style={{
@@ -139,7 +135,6 @@ function SwipeDeck({ projects, unlocked }) {
           onMouseDown={onStart} onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={drag.active ? onEnd : undefined}
         >
           <ProjectCardFace p={cur} />
-          {/* swipe badges */}
           <div className="swipe-badge swipe-badge-right" style={{ opacity: Math.max(0, drag.x / 120) }}>NEXT</div>
           <div className="swipe-badge swipe-badge-left"  style={{ opacity: Math.max(0, -drag.x / 120) }}>SKIP</div>
         </div>
@@ -166,9 +161,8 @@ function SwipeDeck({ projects, unlocked }) {
   );
 }
 
-// ─── Work Grid (desktop) ─────────────────────────────────────────────
 function WorkGrid({ projects, unlocked }) {
-  const [hov, setHov] = useSt(null);
+  const [hov, setHov] = useState(null);
   return (
     <div className="work-grid reveal">
       {projects.map((p, i) => (
@@ -215,7 +209,7 @@ function ProjectCardFace({ p, big }) {
 }
 
 // ─── Experience ──────────────────────────────────────────────────────
-function Experience({ data }) {
+export function Experience({ data }) {
   return (
     <section id="experience" data-section="experience" data-screen-label="04 Experience">
       <div className="container">
@@ -334,7 +328,7 @@ function PapersPanel({ data }) {
 }
 
 // ─── Skills ──────────────────────────────────────────────────────────
-function Skills({ data }) {
+export function Skills({ data }) {
   return (
     <section id="skills" data-section="skills" data-screen-label="05 Skills">
       <div className="container">
@@ -399,7 +393,7 @@ const IconResume = () => (
 );
 
 // ─── Contact ─────────────────────────────────────────────────────────
-function Contact({ data }) {
+export function Contact({ data }) {
   return (
     <section id="contact" data-section="contact" data-screen-label="06 Contact">
       <div className="container">
@@ -445,5 +439,3 @@ function Contact({ data }) {
     </section>
   );
 }
-
-Object.assign(window, { About, Work, Experience, Skills, Contact, useMediaQuery });

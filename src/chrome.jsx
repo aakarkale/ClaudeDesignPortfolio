@@ -1,11 +1,10 @@
 // ====================================================================
-// Chrome + Hero + shared components
+// Chrome + Hero + shared components (ES module)
 // ====================================================================
-
-const { useState, useEffect, useRef, useMemo, useCallback } = React;
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
 // ─── Theme hook ──────────────────────────────────────────────────────
-function useTheme() {
+export function useTheme() {
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem('ak_theme') || 'dark';
@@ -20,18 +19,16 @@ function useTheme() {
 }
 
 // ─── Intersection reveal hook ────────────────────────────────────────
-function useReveal() {
+export function useReveal() {
   useEffect(() => {
     let cancelled = false;
     const run = () => {
       if (cancelled) return;
       const all = document.querySelectorAll('.reveal');
-      console.log('[reveal] setting up on', all.length, 'elements');
       if (!('IntersectionObserver' in window)) {
         all.forEach(e => e.classList.add('in'));
         return;
       }
-      // Stagger in anything already visible
       let i = 0;
       all.forEach((el) => {
         if (el.classList.contains('in')) return;
@@ -51,7 +48,6 @@ function useReveal() {
       }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
       document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
     };
-    // Run twice: once after initial paint, once after fonts settle
     const t1 = setTimeout(run, 50);
     const t2 = setTimeout(run, 500);
     return () => { cancelled = true; clearTimeout(t1); clearTimeout(t2); };
@@ -59,7 +55,7 @@ function useReveal() {
 }
 
 // ─── Custom cursor (dark only, pointer devices only) ─────────────────
-function CustomCursor({ theme }) {
+export function CustomCursor({ theme }) {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
   useEffect(() => {
@@ -104,7 +100,7 @@ function CustomCursor({ theme }) {
 }
 
 // ─── Topbar ──────────────────────────────────────────────────────────
-function Topbar({ theme, onToggleTheme, onLogoLongPress }) {
+export function Topbar({ theme, onToggleTheme, onLogoLongPress }) {
   const pressTimer = useRef(null);
   const [pressing, setPressing] = useState(false);
 
@@ -169,7 +165,7 @@ function Topbar({ theme, onToggleTheme, onLogoLongPress }) {
 }
 
 // ─── Hero ────────────────────────────────────────────────────────────
-function Hero({ theme, data }) {
+export function Hero({ theme, data }) {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
     const i = setInterval(() => setTime(new Date()), 1000 * 30);
@@ -215,7 +211,6 @@ function Hero({ theme, data }) {
   );
 }
 
-// Dark hero — big tight DM Sans, subtle shimmer
 function DarkHeroTitle() {
   return (
     <>
@@ -232,7 +227,6 @@ function DarkHeroTitle() {
   );
 }
 
-// Light hero — editorial Unbounded display
 function LightHeroTitle() {
   return (
     <>
@@ -243,7 +237,7 @@ function LightHeroTitle() {
 }
 
 // ─── Section header ──────────────────────────────────────────────────
-function SectionHead({ index, title, sub }) {
+export function SectionHead({ index, title, sub }) {
   return (
     <div className="section-head reveal">
       <div className="eyebrow">{index} — {title}</div>
@@ -253,7 +247,7 @@ function SectionHead({ index, title, sub }) {
 }
 
 // ─── Footer ──────────────────────────────────────────────────────────
-function Footer({ data }) {
+export function Footer({ data }) {
   return (
     <footer className="footer">
       <div className="container footer-inner">
@@ -270,5 +264,3 @@ function Footer({ data }) {
     </footer>
   );
 }
-
-Object.assign(window, { useTheme, useReveal, CustomCursor, Topbar, Hero, SectionHead, Footer });
