@@ -262,144 +262,6 @@
     });
   }
 
-  // ─── 5. Idle 30s → canvas particle screensaver ───────────────────
-  function initScreensaver() {
-    let idleTimer, saverActive=false, overlay=null, animFrame=null;
-
-    const launchSaver = () => {
-      if (saverActive) return;
-      saverActive = true;
-      const theme = getTheme();
-      const W = window.innerWidth, H = window.innerHeight;
-
-      overlay = document.createElement('div');
-      overlay.style.cssText = `
-        position:fixed;inset:0;z-index:9975;
-        background:${theme==='dark'?'#060606':'#f0ebe0'};
-        cursor:pointer;overflow:hidden;
-        opacity:0;transition:opacity 1s;
-      `;
-
-      // Canvas
-      const canvas = document.createElement('canvas');
-      canvas.width=W; canvas.height=H;
-      canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;';
-      overlay.appendChild(canvas);
-      const ctx = canvas.getContext('2d');
-
-      // Ghost AK.
-      const sig = document.createElement('div');
-      sig.style.cssText = `
-        position:absolute;inset:0;
-        display:flex;align-items:center;justify-content:center;
-        font:700 clamp(60px,14vw,140px)/1 '${theme==='dark'?'DM Sans':'Unbounded'}',sans-serif;
-        letter-spacing:-0.04em;
-        color:${theme==='dark'?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'};
-        user-select:none;pointer-events:none;
-      `;
-      sig.textContent='AK.';
-      overlay.appendChild(sig);
-
-      // Exit hint — bottom-right, barely visible, blinking
-      if (!document.getElementById('ss-hint-style')) {
-        const s=document.createElement('style'); s.id='ss-hint-style';
-        s.textContent='@keyframes ss-blink{0%,100%{opacity:.15}50%{opacity:.3}}';
-        document.head.appendChild(s);
-      }
-      const hint = document.createElement('div');
-      hint.style.cssText = `
-        position:absolute;bottom:24px;right:24px;
-        font:400 10px/1 monospace;letter-spacing:.2em;text-transform:uppercase;
-        color:${theme==='dark'?'rgba(255,255,255,.22)':'rgba(0,0,0,.22)'};
-        animation:ss-blink 2.5s ease-in-out infinite;
-        pointer-events:none;
-      `;
-      hint.textContent='tap / click to exit';
-      overlay.appendChild(hint);
-
-      document.body.appendChild(overlay);
-      requestAnimationFrame(()=>overlay.style.opacity='1');
-
-      // Particle system
-      const DCOLS = ['#ffdd55','#7373ff','#ff8573','#04c40a','#2995ff','#ff4538','rgba(255,255,255,0.7)'];
-      const LCOLS = ['#dc3728','#b4823c','rgba(0,0,0,0.4)','#7c3aed','#1e40af','rgba(0,0,0,0.25)'];
-      const COLS = theme==='dark'?DCOLS:LCOLS;
-      const COUNT = theme==='dark'?90:55;
-
-      const particles = Array.from({length:COUNT}, ()=>({
-        x:Math.random()*W, y:Math.random()*H,
-        vx:(Math.random()-.5)*(theme==='dark'?.7:.35),
-        vy:(Math.random()-.5)*(theme==='dark'?.7:.35)-(theme==='dark'?.12:.06),
-        r:Math.random()*(theme==='dark'?2.2:4)+.5,
-        color:COLS[Math.floor(Math.random()*COLS.length)],
-        alpha:Math.random()*.7+.15,
-        life:Math.random()*Math.PI*2,
-        shape:theme==='light'&&Math.random()>.55?'square':'circle',
-        rot:Math.random()*Math.PI*2,
-        rotV:(Math.random()-.5)*.04,
-      }));
-
-      const draw = ()=>{
-        if (!saverActive) return;
-        ctx.clearRect(0,0,W,H);
-
-        if (theme==='dark') {
-          // Connection lines
-          for (let i=0;i<particles.length;i++) {
-            for (let j=i+1;j<particles.length;j++) {
-              const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
-              const d=Math.sqrt(dx*dx+dy*dy);
-              if (d<110) {
-                ctx.beginPath();
-                ctx.strokeStyle=`rgba(115,115,255,${(1-d/110)*.14})`;
-                ctx.lineWidth=.5;
-                ctx.moveTo(particles[i].x,particles[i].y);
-                ctx.lineTo(particles[j].x,particles[j].y);
-                ctx.stroke();
-              }
-            }
-          }
-        }
-
-        particles.forEach(p=>{
-          p.x+=p.vx; p.y+=p.vy; p.life+=.025; p.rot+=p.rotV;
-          const a=p.alpha*(.5+.5*Math.sin(p.life));
-          ctx.globalAlpha=a; ctx.fillStyle=p.color;
-          if (p.shape==='square') {
-            ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-            ctx.fillRect(-p.r*1.5,-p.r*1.5,p.r*3,p.r*3);
-            ctx.restore();
-          } else {
-            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
-          }
-          if (p.x<-10) p.x=W+10; if (p.x>W+10) p.x=-10;
-          if (p.y<-10) p.y=H+10; if (p.y>H+10) p.y=-10;
-        });
-        ctx.globalAlpha=1;
-        animFrame=requestAnimationFrame(draw);
-      };
-      draw();
-
-      const dismiss = ()=>{
-        saverActive=false; cancelAnimationFrame(animFrame);
-        overlay.style.opacity='0';
-        setTimeout(()=>{ overlay?.remove(); overlay=null; resetIdle(); },700);
-      };
-      overlay.addEventListener('click', dismiss);
-      overlay.addEventListener('touchend', dismiss, {passive:true});
-    };
-
-    const resetIdle = ()=>{
-      clearTimeout(idleTimer);
-      if (saverActive) return;
-      idleTimer=setTimeout(launchSaver, 60000);
-    };
-    ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(ev=>
-      window.addEventListener(ev, resetIdle, {passive:true})
-    );
-    resetIdle();
-  }
-
   // ─── 6. Double-click stat → counter animation ────────────────────
   function initStatCounter() {
     document.addEventListener('dblclick', e=>{
@@ -541,7 +403,6 @@
     initTypeYay();
     initHeroQuote();
     initFooterSig();
-    initScreensaver();
     initStatCounter();
     initShake();
     initStatAchievement();
@@ -551,7 +412,7 @@
     initMobileSwipeRight();
     window.__confettiBurst = confettiBurst;
     window.__showToast = showToast;
-    console.log('%c🥚 12 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
+    console.log('%c🥚 11 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
   };
 
 })();
