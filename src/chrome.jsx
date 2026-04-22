@@ -14,7 +14,24 @@ export function useTheme() {
     document.documentElement.setAttribute('data-theme', theme);
     try { localStorage.setItem('ak_theme', theme); } catch (e) {}
   }, [theme]);
-  const toggle = useCallback(() => setTheme(t => t === 'dark' ? 'light' : 'dark'), []);
+  const toggle = useCallback(() => {
+    const next = (t) => (t === 'dark' ? 'light' : 'dark');
+    // Prefer the View Transitions API for a synchronized cross-fade.
+    // Falls back to a plain state update on older browsers.
+    if (document.startViewTransition) {
+      document.startViewTransition(() => {
+        // Apply the attribute synchronously inside the transition so the
+        // browser snapshots old + new states correctly.
+        setTheme(prev => {
+          const n = next(prev);
+          document.documentElement.setAttribute('data-theme', n);
+          return n;
+        });
+      });
+    } else {
+      setTheme(next);
+    }
+  }, []);
   return [theme, toggle];
 }
 

@@ -51,8 +51,24 @@ body {
 body {
   background: var(--body-bg) !important;
   color: var(--body-fg);
-  transition: background-color 450ms cubic-bezier(.2,.8,.2,1), color 450ms cubic-bezier(.2,.8,.2,1);
 }
+
+/* ============================================================
+   Synchronized dark/light cross-fade (View Transitions API)
+   One single animation replaces the per-element transitions that
+   used to desync and feel glitchy on theme toggle.
+   ============================================================ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 500ms;
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+/* During the transition, pin the snapshots on top of each other so
+   the browser cross-fades rather than sliding. */
+::view-transition-old(root) { animation-name: vt-fade-out; }
+::view-transition-new(root) { animation-name: vt-fade-in; }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in  { from { opacity: 0; } }
 
 /* ============================================================
    THEME: LIGHT (editorial magazine)
