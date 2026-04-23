@@ -6,20 +6,20 @@
    HERO
    ============================================================ */
 .hero-wrap {
-  min-height: calc(100vh - 80px);
-  padding: 88px 24px 120px;
+  min-height: calc(100svh - 72px);
+  padding: 64px 20px 80px;
   display: flex; flex-direction: column; justify-content: flex-start;
-  gap: 22px;
+  gap: 18px;
   max-width: 1200px; margin: 0 auto;
   position: relative;
 }
 @media (min-width: 768px) {
-  .hero-wrap { padding: 96px 48px 140px; gap: 28px; }
+  .hero-wrap { min-height: calc(100vh - 80px); padding: 96px 48px 140px; gap: 28px; }
 }
 
 .hero-meta {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap;
+  gap: 12px; flex-wrap: wrap;
   width: 100%;
 }
 .hero-meta .hero-time { margin-left: auto; }
@@ -43,7 +43,7 @@
   margin: 0;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(56px, 13vw, 200px);
+  font-size: clamp(44px, 14vw, 200px);
   line-height: 0.9;
   letter-spacing: -0.045em;
   color: var(--text-0);
@@ -927,4 +927,121 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tech-reel-track { animation: none; }
+}
+
+/* ============================================================
+   MOBILE TUNING (<=640px) — alignment, spacing, typography
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Hero */
+  .hero-meta .eyebrow { font-size: 10px; letter-spacing: 0.22em; gap: 8px; }
+  .hero-meta .eyebrow::before { width: 14px; }
+  .hero-time { font-size: 11px; letter-spacing: 0.05em; }
+  .hero-line-sub { font-size: 0.48em; margin-top: 0.25em; }
+  .hero-tagline { font-size: 15px; line-height: 1.5; }
+  .hero-sub { max-width: 36ch; }
+  .hero-actions { gap: 10px; width: 100%; }
+  .hero-actions .btn { flex: 1 1 auto; justify-content: center; padding: 13px 18px; font-size: 13px; }
+  .hero-scroll { display: none; }
+
+  /* Light hero — editorial */
+  :root[data-theme='light'] .hero-title { padding: 16px 0 18px; }
+  .hero-mag-kicker { letter-spacing: 0.3em !important; }
+  .hero-mag-title { letter-spacing: -0.045em !important; }
+  .hero-mag-sub { letter-spacing: 0.22em !important; }
+
+  /* Section scaffolding */
+  section[data-section] { padding: 64px 0; }
+  .section-head { margin-bottom: 36px; gap: 12px; }
+
+  /* About */
+  .about-hero { margin-bottom: 40px; padding-bottom: 36px; gap: 16px; }
+  .about-location { font-size: 11px; letter-spacing: 0.1em; }
+  .about-grid { gap: 22px; margin-bottom: 44px; }
+  .about-para { padding-left: 18px; line-height: 1.6; }
+  :root[data-theme='light'] .about-body:first-child .about-para:first-of-type::first-letter {
+    font-size: 4.4em; margin: 4px 8px 0 0;
+  }
+  .about-stats-grid { gap: 10px; }
+  .stat { padding: 20px 16px; border-radius: 14px; gap: 6px; }
+  .stat-num { font-size: 24px; }
+  .stat-label { font-size: 10px; letter-spacing: 0.1em; }
+
+  /* Work — swipe deck */
+  .swipe-stage { min-height: 520px; gap: 18px; padding: 12px 0 28px; }
+  .swipe-deck { width: min(320px, 86vw); height: 420px; }
+  .swipe-card { padding: 24px; border-radius: 20px; }
+  .swipe-badge { top: 22px; padding: 6px 12px; font-size: 10px; letter-spacing: 0.25em; }
+  .swipe-badge-right { right: 18px; }
+  .swipe-badge-left  { left: 18px; }
+  .proj-title { font-size: 26px; }
+  .proj-big .proj-title, .proj-wide .proj-title { font-size: 28px; }
+
+  /* Experience */
+  .exp-list { border-top-color: var(--border); }
+  .exp-item { padding: 22px 0; gap: 8px; }
+  .exp-role { font-size: 20px; margin-bottom: 4px; }
+  .exp-company { margin-bottom: 12px; font-size: 13px; gap: 8px; }
+  .exp-place { font-size: 11px; }
+  .exp-bullets li { font-size: 13.5px; line-height: 1.55; padding-left: 14px; }
+
+  .exp-meta-stack { gap: 28px; margin-top: 44px; }
+  .panel { padding: 20px; border-radius: 14px; }
+  .panel-title { margin-bottom: 12px; font-size: 10px; letter-spacing: 0.18em; }
+  .panel-list { gap: 20px; }
+  .panel-row { padding: 10px; margin: -2px; gap: 10px; }
+  .panel-line-a { font-size: 19px; line-height: 1.2; }
+  .panel-line-b { font-size: 13px; line-height: 1.45; }
+  .panel-row-arrow { font-size: 16px; padding-top: 2px; }
+  .panel-row-arrow-tr { top: 18px; right: 18px; }
+
+  /* Skills */
+  .skills-grid { gap: 12px; }
+  .skill-block { padding: 20px; border-radius: 14px; }
+  .skill-head { margin-bottom: 14px; font-size: 12px; letter-spacing: 0.16em; }
+
+  /* Tech reel */
+  .tech-reel { padding: 20px 0; margin-top: 32px; }
+  .tech-reel-item { gap: 18px; padding-right: 18px; }
+  .tech-reel-entry { gap: 8px; }
+  .tech-reel-name { font-size: 14px; }
+  .tech-reel-entry.no-logo .tech-reel-name { font-size: 15px; }
+  .tech-reel-logo { height: 20px; }
+
+  /* Contact */
+  .contact-hero { margin-bottom: 32px; gap: 14px; }
+  .contact-big { font-size: clamp(40px, 12vw, 64px); line-height: 0.95; letter-spacing: -0.035em; }
+  .contact-sub { font-size: 14.5px; line-height: 1.55; }
+  .contact-grid { gap: 10px; }
+  .contact-card { padding: 18px; border-radius: 14px; min-height: 128px; gap: 8px; }
+  .contact-card-label { font-size: 10px; letter-spacing: 0.16em; }
+  .contact-card-value { font-size: 18px; line-height: 1.2; padding-top: 4px; }
+  .contact-card-arrow { top: 14px; right: 14px; font-size: 15px; }
+  .ccard-logo { width: 28px; height: 28px; }
+  .ccard-logo svg { width: 28px; height: 28px; }
+
+  /* Footer */
+  .footer { padding: 28px 0; }
+  .footer-inner { gap: 14px; }
+  .footer-left { gap: 10px; flex-wrap: wrap; }
+  .footer-sig { font-size: 16px; }
+  .footer-meta { font-size: 11px; }
+  .footer-right { gap: 14px; }
+  .footer-link { font-size: 12px; }
+
+  /* Light-mode magazine folio label — move out of the way */
+  :root[data-theme='light'] section[data-section]::before {
+    top: 16px; right: 16px; font-size: 9px; letter-spacing: 0.22em;
+  }
+}
+
+/* Extra tightening on very narrow phones (<=380px) */
+@media (max-width: 380px) {
+  .container { padding: 0 16px; }
+  .hero-wrap { padding: 56px 16px 72px; }
+  .hero-meta { gap: 8px; }
+  .hero-meta .eyebrow { font-size: 9.5px; letter-spacing: 0.18em; }
+  .hero-time { font-size: 10.5px; }
+  .about-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .contact-card-value { font-size: 16px; }
 }
