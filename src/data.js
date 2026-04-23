@@ -147,6 +147,19 @@ export const AK_DATA = {
     { group: 'Product & Design', items: ['Figma', 'Jira', 'Confluence', 'Productboard', 'Airtable'] },
   ],
 
+  techReel: [
+    'Figma', 'Jira', 'Confluence', 'Productboard', 'Aha!', 'Airtable',
+    'Notion', 'Linear', 'Miro', 'FigJam', 'Slack', 'Loom', 'Zoom',
+    'Amplitude', 'Mixpanel', 'Segment', 'Pendo', 'Heap', 'LaunchDarkly',
+    'Tableau', 'Power BI', 'Looker', 'Google Analytics', 'Dovetail', 'UserTesting',
+    'Cursor', 'Claude Code', 'Replit', 'Lovable', 'Gemini Code Assist',
+    'ChatGPT', 'Claude', 'Hugging Face', 'TensorFlow', 'Scikit-Learn', 'PySpark',
+    'AWS', 'GCP', 'Azure', 'BigQuery', 'Redshift', 'Snowflake',
+    'GitHub', 'Vercel', 'Postman', 'Datadog',
+    'Python', 'TypeScript', 'SQL',
+    'Salesforce', 'HubSpot', 'Marketo', 'Stripe', 'Intercom', 'Zendesk',
+  ],
+
   education: [
     { degree: 'M.S. in Business Analytics & Data Science', school: 'Cal State East Bay', period: '2019 — 2020', url: 'https://www.csueastbay.edu/' },
     { degree: 'M.S. in Information Systems Management', school: 'Santa Clara University', period: '2018 — 2019', url: 'https://www.scu.edu/' },

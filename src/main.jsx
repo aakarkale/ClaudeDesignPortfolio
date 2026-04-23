@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client';
 
 import { AK_DATA } from './data.js';
 import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer } from './chrome.jsx';
-import { About, Work, Experience, Skills, Contact } from './sections.jsx';
+import { About, Work, Experience, Skills, TechReel, Contact } from './sections.jsx';
 import './easter-eggs.js';  // side-effect: sets window.initEasterEggs
 
 function App() {
@@ -69,6 +69,7 @@ function App() {
         <Work data={data} projects={projectList} unlocked={konami} />
         <Experience data={data} />
         <Skills data={data} />
+        <TechReel data={data} />
         <Contact data={data} />
       </main>
       <Footer data={data} />

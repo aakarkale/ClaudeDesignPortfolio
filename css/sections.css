@@ -833,3 +833,68 @@
 :root[data-theme='light'] body {
   cursor: auto;
 }
+
+/* ============================================================
+   Tech Reel (marquee under Skills)
+   ============================================================ */
+.tech-reel {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-top: 48px;
+  padding: 28px 0;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-1);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
+}
+:root[data-theme='light'] .tech-reel {
+  background: var(--surface-3);
+}
+
+.tech-reel-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: tech-reel-scroll 75s linear infinite;
+  will-change: transform;
+}
+.tech-reel:hover .tech-reel-track { animation-play-state: paused; }
+
+.tech-reel-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 28px;
+  padding-right: 28px;
+}
+.tech-reel-label {
+  font: 600 clamp(18px, 2.4vw, 28px)/1 var(--font-head);
+  letter-spacing: -0.01em;
+  color: var(--text-3);
+  transition: color 200ms;
+}
+:root[data-theme='light'] .tech-reel-label {
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--text-2);
+}
+.tech-reel-item:hover .tech-reel-label { color: var(--accent); }
+
+.tech-reel-sep {
+  color: var(--accent);
+  opacity: 0.55;
+  font-size: clamp(10px, 1.1vw, 13px);
+  transform: translateY(-1px);
+}
+:root[data-theme='light'] .tech-reel-sep { opacity: 0.7; }
+
+@keyframes tech-reel-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tech-reel-track { animation: none; }
+}

@@ -349,6 +349,25 @@ export function Skills({ data }) {
   );
 }
 
+// ─── Tech Reel (marquee under Skills) ────────────────────────────────
+export function TechReel({ data }) {
+  const items = data.techReel || [];
+  if (!items.length) return null;
+  const loop = [...items, ...items];
+  return (
+    <div className="tech-reel" aria-hidden="true">
+      <div className="tech-reel-track">
+        {loop.map((label, i) => (
+          <span key={i} className="tech-reel-item">
+            <span className="tech-reel-label">{label}</span>
+            <span className="tech-reel-sep">◆</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Contact icons ───────────────────────────────────────────────────
 const IconEmail = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
