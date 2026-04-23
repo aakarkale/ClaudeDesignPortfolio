@@ -204,7 +204,7 @@ export const AK_DATA = {
   ],
 
   certifications: [
-    { name: 'Salesforce Certified Advanced Administrator', year: '2025', note: 'Held by 15% of certified professionals' },
+    { name: 'Salesforce Certified Advanced Administrator', year: '2025', note: 'Held by 15% of certified professionals', url: 'https://trailhead.salesforce.com/en/credentials/verification/' },
     { name: 'FAA-Certified Drone Pilot (Part 107)', year: '2021', note: 'See my YouTube Channel', url: 'https://youtube.com/@aakarkale' },
   ],
 
