@@ -6,11 +6,17 @@
    HERO
    ============================================================ */
 .hero-wrap {
-  padding: 36px 20px 40px;
+  min-height: calc(100svh - 72px);
+  padding: 36px 20px 48px;
   display: flex; flex-direction: column; justify-content: flex-start;
   gap: 16px;
   max-width: 1200px; margin: 0 auto;
   position: relative;
+}
+/* Mobile: pin the CTAs to the bottom of the viewport so the hero fills
+   the fold and the About section stays cleanly below. */
+@media (max-width: 640px) {
+  .hero-wrap .hero-actions { margin-top: auto; padding-top: 16px; }
 }
 @media (min-width: 768px) {
   .hero-wrap {
@@ -18,6 +24,7 @@
     padding: 96px 48px 140px;
     gap: 28px;
   }
+  .hero-wrap .hero-actions { margin-top: 0; padding-top: 0; }
 }
 
 .hero-meta {
@@ -1055,7 +1062,7 @@
 /* Extra tightening on very narrow phones (<=380px) */
 @media (max-width: 380px) {
   .container { padding: 0 16px; }
-  .hero-wrap { padding: 32px 16px 36px; }
+  .hero-wrap { padding: 32px 16px 40px; }
   .hero-meta { gap: 8px; }
   .hero-meta .eyebrow { font-size: 9.5px; letter-spacing: 0.18em; }
   .hero-time { font-size: 10.5px; }
