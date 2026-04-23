@@ -190,7 +190,6 @@ export const AK_DATA = {
     { name: 'Postman', slug: 'postman' },
     { name: 'Datadog', slug: 'datadog' },
     { name: 'TypeScript', slug: 'typescript' },
-    { name: 'SQL' },
     { name: 'Salesforce', slug: 'salesforce' },
     { name: 'HubSpot', slug: 'hubspot' },
     { name: 'Marketo', slug: 'marketo' },
