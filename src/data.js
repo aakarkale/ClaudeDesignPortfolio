@@ -209,8 +209,8 @@ export const AK_DATA = {
   ],
 
   papers: [
-    { title: 'Number Plate Recognition System: A Smart City Solution', pub: 'IRJET · Vol 4, Issue 12', year: 'Dec 2017', url: 'https://www.irjet.net/archives/V4/i12/IRJET-V4I12.pdf' },
-    { title: '3D Face Recognition Technology in Network Security Applications', pub: 'IRJET · Vol 4, Issue 12', year: 'Dec 2017', url: 'https://www.irjet.net/archives/V4/i12/IRJET-V4I12.pdf' },
+    { title: 'Number Plate Recognition System: A Smart City Solution', pub: 'IRJET · Vol 4, Issue 12', year: 'Dec 2017', url: 'https://github.com/aakarkale/ClaudeDesignPortfolio/releases/download/papers-v1/Number.Plate.Recognition.System.pdf' },
+    { title: '3D Face Recognition Technology in Network Security Applications', pub: 'IRJET · Vol 4, Issue 12', year: 'Dec 2017', url: 'https://github.com/aakarkale/ClaudeDesignPortfolio/releases/download/papers-v1/3D.Face.Recognition.Technology.pdf' },
   ],
 
   contact: {
