@@ -953,11 +953,18 @@
    ============================================================ */
 @media (max-width: 640px) {
   /* Hero */
+  .hero-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .hero-meta .hero-time { margin-left: 0; }
   .hero-meta .eyebrow { font-size: 10px; letter-spacing: 0.22em; gap: 8px; }
   .hero-meta .eyebrow::before { width: 14px; }
   .hero-time { font-size: 11px; letter-spacing: 0.05em; }
-  .hero-line-sub { font-size: 0.46em; margin-top: 0.28em; }
-  .hero-tagline { font-size: clamp(16px, 4.2vw, 20px); line-height: 1.45; }
+  .hero-title { font-size: clamp(58px, 16vw, 200px); }
+  .hero-line-sub { font-size: 0.48em; margin-top: 0.3em; }
+  .hero-tagline { font-size: clamp(17px, 4.8vw, 22px); line-height: 1.45; }
   .hero-sub { max-width: 40ch; }
   .hero-actions { gap: 10px; width: 100%; }
   .hero-actions .btn { flex: 1 1 auto; justify-content: center; padding: 15px 18px; font-size: 14px; }
@@ -1051,9 +1058,11 @@
 /* Extra tightening on very narrow phones (<=380px) */
 @media (max-width: 380px) {
   .container { padding: 0 16px; }
-  .hero-wrap { padding: 56px 16px 72px; }
+  .hero-wrap { padding: 44px 16px 52px; }
   .hero-meta { gap: 8px; }
   .hero-meta .eyebrow { font-size: 9.5px; letter-spacing: 0.18em; }
   .hero-time { font-size: 10.5px; }
+  .hero-title { font-size: clamp(50px, 15vw, 58px); }
+  .hero-tagline { font-size: 16px; }
   .about-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
