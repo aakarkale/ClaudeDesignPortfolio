@@ -2,6 +2,7 @@
 // Sections: About, Work (swipe deck + grid), Experience, Skills, Contact
 // ====================================================================
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { SectionHead } from './chrome.jsx';
 
 // ─── About ───────────────────────────────────────────────────────────
@@ -387,15 +388,18 @@ export function TechReel({ data }) {
           </span>
         ))}
       </div>
-      <div
-        className={`tech-reel-tip ${tip.show ? 'on' : ''}`}
-        style={{ left: tip.x, top: tip.y + 28 }}
-      >
-        <span className="tech-reel-tip-dot" />
-        <span className="tech-reel-tip-text">
-          The Stack behind my products, prototypes, and everyday PM work
-        </span>
-      </div>
+      {typeof document !== 'undefined' && createPortal(
+        <div
+          className={`tech-reel-tip ${tip.show ? 'on' : ''}`}
+          style={{ left: tip.x, top: tip.y + 32 }}
+        >
+          <span className="tech-reel-tip-dot" />
+          <span className="tech-reel-tip-text">
+            The Stack behind my products, prototypes, and everyday PM work
+          </span>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
