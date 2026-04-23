@@ -170,7 +170,7 @@ export const AK_DATA = {
     { name: 'Power BI', slug: 'powerbi' },
     { name: 'Looker', slug: 'looker' },
     { name: 'Google Analytics', slug: 'googleanalytics' },
-    { name: 'Dovetail' },
+    { name: 'Dovetail', slug: 'dovetail' },
     { name: 'UserTesting' },
     { name: 'Cursor', slug: 'cursor' },
     { name: 'Claude Code', slug: 'anthropic' },

@@ -350,20 +350,22 @@ export function Skills({ data }) {
 }
 
 // ─── Tech Reel (marquee under Skills) ────────────────────────────────
-function TechReelLogo({ name, slug }) {
+function TechReelEntry({ name, slug }) {
   const [errored, setErrored] = useState(false);
-  if (!slug || errored) {
-    return <span className="tech-reel-label">{name}</span>;
-  }
+  const showLogo = slug && !errored;
   return (
-    <img
-      className="tech-reel-logo"
-      src={`https://cdn.simpleicons.org/${slug}`}
-      alt={name}
-      title={name}
-      draggable="false"
-      onError={() => setErrored(true)}
-    />
+    <span className={`tech-reel-entry ${showLogo ? 'has-logo' : 'no-logo'}`}>
+      {showLogo && (
+        <img
+          className="tech-reel-logo"
+          src={`https://cdn.simpleicons.org/${slug}`}
+          alt=""
+          draggable="false"
+          onError={() => setErrored(true)}
+        />
+      )}
+      <span className="tech-reel-name">{name}</span>
+    </span>
   );
 }
 
@@ -376,7 +378,7 @@ export function TechReel({ data }) {
       <div className="tech-reel-track">
         {loop.map((item, i) => (
           <span key={i} className="tech-reel-item">
-            <TechReelLogo name={item.name} slug={item.slug} />
+            <TechReelEntry name={item.name} slug={item.slug} />
             <span className="tech-reel-sep">◆</span>
           </span>
         ))}

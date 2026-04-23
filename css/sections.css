@@ -869,18 +869,27 @@
   gap: 28px;
   padding-right: 28px;
 }
-.tech-reel-label {
-  font: 600 clamp(18px, 2.4vw, 28px)/1 var(--font-head);
+.tech-reel-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.tech-reel-name {
+  font: 600 clamp(16px, 2.1vw, 24px)/1 var(--font-head);
   letter-spacing: -0.01em;
   color: var(--text-3);
-  transition: color 200ms;
+  transition: color 220ms;
 }
-:root[data-theme='light'] .tech-reel-label {
+:root[data-theme='light'] .tech-reel-name {
   font-weight: 700;
   letter-spacing: -0.005em;
   color: var(--text-2);
 }
-.tech-reel-item:hover .tech-reel-label { color: var(--accent); }
+/* When no logo is available, bump the name to match the visual weight of logo-bearing entries */
+.tech-reel-entry.no-logo .tech-reel-name {
+  font-size: clamp(18px, 2.4vw, 28px);
+}
+.tech-reel-item:hover .tech-reel-name { color: var(--accent); }
 
 .tech-reel-logo {
   height: clamp(24px, 2.4vw, 34px);
@@ -888,7 +897,7 @@
   display: block;
   user-select: none;
   -webkit-user-drag: none;
-  opacity: 0.78;
+  opacity: 0.82;
   /* Dark mode: force logos to white silhouette */
   filter: brightness(0) invert(1);
   transition: opacity 220ms, filter 220ms, transform 220ms;
@@ -896,7 +905,7 @@
 :root[data-theme='light'] .tech-reel-logo {
   /* Light mode: pure-black silhouette on cream */
   filter: brightness(0);
-  opacity: 0.72;
+  opacity: 0.75;
 }
 .tech-reel-item:hover .tech-reel-logo {
   opacity: 1;
