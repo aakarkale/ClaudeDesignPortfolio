@@ -368,10 +368,17 @@ function TechReelEntry({ name, slug }) {
 
 export function TechReel({ data }) {
   const items = data.techReel || [];
+  const [tip, setTip] = useState({ show: false, x: 0, y: 0 });
   if (!items.length) return null;
   const loop = [...items, ...items];
   return (
-    <div className="tech-reel" aria-hidden="true">
+    <div
+      className="tech-reel"
+      aria-hidden="true"
+      onMouseEnter={(e) => setTip({ show: true, x: e.clientX, y: e.clientY })}
+      onMouseMove={(e) => setTip({ show: true, x: e.clientX, y: e.clientY })}
+      onMouseLeave={() => setTip((t) => ({ ...t, show: false }))}
+    >
       <div className="tech-reel-track">
         {loop.map((item, i) => (
           <span key={i} className="tech-reel-item">
@@ -379,6 +386,15 @@ export function TechReel({ data }) {
             <span className="tech-reel-sep">◆</span>
           </span>
         ))}
+      </div>
+      <div
+        className={`tech-reel-tip ${tip.show ? 'on' : ''}`}
+        style={{ left: tip.x, top: tip.y + 28 }}
+      >
+        <span className="tech-reel-tip-dot" />
+        <span className="tech-reel-tip-text">
+          The Stack behind my products, prototypes, and everyday PM work
+        </span>
       </div>
     </div>
   );

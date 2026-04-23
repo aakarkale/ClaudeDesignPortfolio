@@ -885,7 +885,56 @@
   animation: tech-reel-scroll 95s linear infinite;
   will-change: transform;
 }
-.tech-reel:hover .tech-reel-track { animation-play-state: paused; }
+
+/* Cursor-following tooltip shown on desktop hover over the reel */
+.tech-reel-tip {
+  position: fixed;
+  left: 0; top: 0;
+  transform: translate(-50%, 0) translateY(8px) scale(0.96);
+  transform-origin: top center;
+  pointer-events: none;
+  z-index: 9970;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px 11px 14px;
+  border-radius: 100px;
+  max-width: min(420px, 72vw);
+  white-space: nowrap;
+  background: rgba(16, 16, 17, 0.92);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  font: 500 13px/1.2 var(--font-head);
+  letter-spacing: -0.005em;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
+  opacity: 0;
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+.tech-reel-tip.on {
+  opacity: 1;
+  transform: translate(-50%, 0) translateY(0) scale(1);
+}
+.tech-reel-tip-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  flex-shrink: 0;
+}
+:root[data-theme='light'] .tech-reel-tip {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: var(--text-1);
+  color: var(--text-0);
+  font-family: var(--font-body);
+  font-weight: 600;
+  box-shadow: 5px 5px 0 var(--text-1), 0 12px 32px rgba(0,0,0,0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+@media (max-width: 720px) {
+  .tech-reel-tip { display: none; }
+}
 
 .tech-reel-item {
   display: inline-flex;
