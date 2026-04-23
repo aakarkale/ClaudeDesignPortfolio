@@ -858,7 +858,7 @@
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-  animation: tech-reel-scroll 75s linear infinite;
+  animation: tech-reel-scroll 95s linear infinite;
   will-change: transform;
 }
 .tech-reel:hover .tech-reel-track { animation-play-state: paused; }
@@ -881,6 +881,27 @@
   color: var(--text-2);
 }
 .tech-reel-item:hover .tech-reel-label { color: var(--accent); }
+
+.tech-reel-logo {
+  height: clamp(24px, 2.4vw, 34px);
+  width: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  opacity: 0.78;
+  /* Dark mode: force logos to white silhouette */
+  filter: brightness(0) invert(1);
+  transition: opacity 220ms, filter 220ms, transform 220ms;
+}
+:root[data-theme='light'] .tech-reel-logo {
+  /* Light mode: pure-black silhouette on cream */
+  filter: brightness(0);
+  opacity: 0.72;
+}
+.tech-reel-item:hover .tech-reel-logo {
+  opacity: 1;
+  transform: scale(1.05);
+}
 
 .tech-reel-sep {
   color: var(--accent);

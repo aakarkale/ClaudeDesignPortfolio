@@ -350,6 +350,23 @@ export function Skills({ data }) {
 }
 
 // ─── Tech Reel (marquee under Skills) ────────────────────────────────
+function TechReelLogo({ name, slug }) {
+  const [errored, setErrored] = useState(false);
+  if (!slug || errored) {
+    return <span className="tech-reel-label">{name}</span>;
+  }
+  return (
+    <img
+      className="tech-reel-logo"
+      src={`https://cdn.simpleicons.org/${slug}`}
+      alt={name}
+      title={name}
+      draggable="false"
+      onError={() => setErrored(true)}
+    />
+  );
+}
+
 export function TechReel({ data }) {
   const items = data.techReel || [];
   if (!items.length) return null;
@@ -357,9 +374,9 @@ export function TechReel({ data }) {
   return (
     <div className="tech-reel" aria-hidden="true">
       <div className="tech-reel-track">
-        {loop.map((label, i) => (
+        {loop.map((item, i) => (
           <span key={i} className="tech-reel-item">
-            <span className="tech-reel-label">{label}</span>
+            <TechReelLogo name={item.name} slug={item.slug} />
             <span className="tech-reel-sep">◆</span>
           </span>
         ))}
