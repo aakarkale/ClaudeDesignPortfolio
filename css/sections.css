@@ -7,11 +7,17 @@
    ============================================================ */
 .hero-wrap {
   min-height: calc(100svh - 72px);
-  padding: 64px 20px 80px;
+  padding: 48px 20px 56px;
   display: flex; flex-direction: column; justify-content: flex-start;
   gap: 18px;
   max-width: 1200px; margin: 0 auto;
   position: relative;
+}
+/* Mobile: let the title + sub float to the optical centre so the hero
+   beautifully fills the viewport instead of piling everything up top. */
+@media (max-width: 640px) {
+  .hero-wrap .hero-title { margin-top: auto; }
+  .hero-wrap .hero-actions { margin-top: auto; }
 }
 @media (min-width: 768px) {
   .hero-wrap { min-height: calc(100vh - 80px); padding: 96px 48px 140px; gap: 28px; }
@@ -43,7 +49,7 @@
   margin: 0;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(44px, 14vw, 200px);
+  font-size: clamp(52px, 15vw, 200px);
   line-height: 0.9;
   letter-spacing: -0.045em;
   color: var(--text-0);
@@ -950,11 +956,11 @@
   .hero-meta .eyebrow { font-size: 10px; letter-spacing: 0.22em; gap: 8px; }
   .hero-meta .eyebrow::before { width: 14px; }
   .hero-time { font-size: 11px; letter-spacing: 0.05em; }
-  .hero-line-sub { font-size: 0.48em; margin-top: 0.25em; }
-  .hero-tagline { font-size: 15px; line-height: 1.5; }
-  .hero-sub { max-width: 36ch; }
+  .hero-line-sub { font-size: 0.46em; margin-top: 0.28em; }
+  .hero-tagline { font-size: clamp(16px, 4.2vw, 20px); line-height: 1.45; }
+  .hero-sub { max-width: 40ch; }
   .hero-actions { gap: 10px; width: 100%; }
-  .hero-actions .btn { flex: 1 1 auto; justify-content: center; padding: 13px 18px; font-size: 13px; }
+  .hero-actions .btn { flex: 1 1 auto; justify-content: center; padding: 15px 18px; font-size: 14px; }
   .hero-scroll { display: none; }
 
   /* Light hero — editorial */
