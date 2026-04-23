@@ -108,19 +108,16 @@ function SwipeDeck({ projects, unlocked }) {
   return (
     <div className="swipe-stage reveal">
       <div className="swipe-deck">
-        {[2, 1].map(off => {
-          const p = list[(idx + off) % n];
-          return (
-            <div key={`back-${off}`} className="swipe-card swipe-card-back"
-                 style={{
-                   transform: `translateY(${off * 10}px) scale(${1 - off * 0.05})`,
-                   opacity: 1 - off * 0.3,
-                   zIndex: 10 - off,
-                 }}>
-              <ProjectCardFace p={p} />
-            </div>
-          );
-        })}
+        {[2, 1].map(off => (
+          <div key={`back-${off}`} className="swipe-card swipe-card-back"
+               style={{
+                 transform: `translateY(${off * 10}px) scale(${1 - off * 0.05})`,
+                 opacity: 1 - off * 0.3,
+                 zIndex: 10 - off,
+               }}
+               aria-hidden="true"
+          />
+        ))}
 
         <div
           className={`swipe-card swipe-card-top ${drag.flung ? 'swipe-flung' : ''}`}
