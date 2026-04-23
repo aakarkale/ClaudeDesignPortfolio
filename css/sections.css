@@ -16,7 +16,7 @@
 /* Mobile: pin the CTAs to the bottom of the viewport so the hero fills
    the fold and the About section stays cleanly below. */
 @media (max-width: 640px) {
-  .hero-wrap .hero-title { margin-top: 20px; }
+  .hero-wrap .hero-title { margin-top: 40px; }
   .hero-wrap .hero-actions { margin-top: auto; padding-top: 16px; }
 }
 @media (min-width: 768px) {
