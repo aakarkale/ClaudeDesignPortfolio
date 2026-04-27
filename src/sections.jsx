@@ -466,7 +466,7 @@ export function Contact({ data }) {
 
         <div className="contact-grid reveal">
           {[
-            { label:'Email', value:'hello@aakarkale.com', href:`mailto:${data.contact.email}`, icon: <IconEmail /> },
+            { label:'Email', value:data.contact.email, href:`mailto:${data.contact.email}`, icon: <IconEmail /> },
             { label:'LinkedIn', value:'/in/aakarkale', href:data.contact.linkedin, icon: <IconLinkedIn /> },
             { label:'X / Twitter', value:'@aakarkale', href:data.contact.x, icon: <IconX /> },
             { label:'YouTube', value:'@aakarkale', href:'https://www.youtube.com/channel/UCi_Gt1HFpBS5p3TSLlkP6Kw', icon: <IconYouTube /> },

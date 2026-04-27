@@ -214,7 +214,7 @@ export const AK_DATA = {
   ],
 
   contact: {
-    email: 'hello@aakarkale.com',
+    email: 'aakararunkale@gmail.com',
     linkedin: 'https://linkedin.com/in/aakarkale',
     x: 'https://x.com/aakarkale',
     youtube: 'https://www.youtube.com/channel/UCi_Gt1HFpBS5p3TSLlkP6Kw',
