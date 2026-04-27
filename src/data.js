@@ -127,6 +127,15 @@ export const AK_DATA = {
       accent: 'rgb(255,69,56)',
       url: 'https://traffic-camera-alert.replit.app/',
     },
+    {
+      id: 'aurafocus',
+      index: '06',
+      title: 'Aura Focus AR',
+      oneLiner: 'AR smart glasses that pin voice reminders to real-world spots around your home — built for ADHD focus.',
+      tags: ['AR', 'Voice AI', 'ADHD'],
+      accent: 'rgb(41,149,255)',
+      url: 'https://aura-focus.replit.app',
+    },
   ],
 
   secretProject: {
