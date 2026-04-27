@@ -164,7 +164,7 @@ function WorkGrid({ projects, unlocked }) {
   return (
     <div className="work-grid reveal">
       {projects.map((p, i) => (
-        <ProjectCard key={p.id} p={p} big={i === 0} wide={p.id === 'photocloud'} onHover={setHov} hov={hov === p.id} />
+        <ProjectCard key={p.id} p={p} big={i === 0} onHover={setHov} hov={hov === p.id} />
       ))}
     </div>
   );
