@@ -212,8 +212,7 @@
 .about-body { display: flex; flex-direction: column; gap: 20px; }
 .about-para {
   margin: 0;
-  padding-left: 40px;
-  font: 400 clamp(15px, 1.4vw, 17px)/1.65 var(--font-body);
+  font: 400 clamp(15px, 1.7vw, 19px)/1.65 var(--font-body);
   color: var(--text-2);
   letter-spacing: -0.005em;
   text-wrap: pretty;
