@@ -1041,7 +1041,7 @@
   .about-hero { margin-bottom: 40px; padding-bottom: 36px; gap: 16px; }
   .about-location { font-size: 11px; letter-spacing: 0.1em; }
   .about-grid { gap: 22px; margin-bottom: 44px; }
-  .about-para { padding-left: 18px; line-height: 1.6; }
+  .about-para { padding-left: 18px; font-size: 16.5px; line-height: 1.65; }
   :root[data-theme='light'] .about-body:first-child .about-para:first-of-type::first-letter {
     font-size: 4.4em; margin: 4px 8px 0 0;
   }
