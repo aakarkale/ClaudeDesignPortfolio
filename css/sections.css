@@ -356,9 +356,17 @@
   font: 700 clamp(24px, 3vw, 34px)/1 var(--font-head);
   letter-spacing: -0.03em;
   color: var(--text-0);
+  overflow-wrap: anywhere;
 }
 .proj-big .proj-title { font-size: clamp(34px, 4.5vw, 54px); }
-:root[data-theme='light'] .proj-title { font-family: var(--font-display); }
+:root[data-theme='light'] .proj-title {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.4vw, 28px);
+  letter-spacing: -0.04em;
+}
+:root[data-theme='light'] .proj-big .proj-title {
+  font-size: clamp(32px, 4vw, 48px);
+}
 
 .proj-one {
   margin: 0;
