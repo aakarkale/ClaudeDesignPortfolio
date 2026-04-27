@@ -89,7 +89,7 @@ export const AK_DATA = {
       oneLiner: 'LLM-powered voice interview coach with RAG and agentic capabilities.',
       tags: ['RAG', 'LLM', 'Voice AI', 'Cursor'],
       accent: 'rgb(115,115,255)',
-      url: 'https://archly.ai',
+      url: 'https://archly.dev/',
     },
     {
       id: 'alignmoney',
@@ -98,7 +98,7 @@ export const AK_DATA = {
       oneLiner: 'AI-powered personal finance with smart budgeting and intelligent investing.',
       tags: ['FinTech', 'AI', 'Replit'],
       accent: 'rgb(4,196,10)',
-      url: 'https://alignmoney.app',
+      url: 'https://align-money-aakarsidehustle.replit.app/',
     },
     {
       id: 'biotracker',
@@ -107,7 +107,7 @@ export const AK_DATA = {
       oneLiner: 'ML-powered health analytics hub for biomarker tracking and personalized insights.',
       tags: ['Machine Learning', 'HealthTech', 'Analytics'],
       accent: 'rgb(255,133,115)',
-      url: 'https://biotracker.app',
+      url: 'https://biotracker.replit.app/',
     },
     {
       id: 'photocloud',
@@ -116,7 +116,7 @@ export const AK_DATA = {
       oneLiner: 'AI-integrated photo business platform with built-in CRM workflows.',
       tags: ['CRM', 'SaaS', 'Lovable'],
       accent: 'rgb(255,221,85)',
-      url: 'https://photocloudcrm.com',
+      url: 'https://photo-cloud-studio.replit.app/',
     },
     {
       id: 'traffic',
@@ -125,7 +125,7 @@ export const AK_DATA = {
       oneLiner: 'Born from one expensive lesson at a notorious SF intersection.',
       tags: ['Computer Vision', 'Real-time', 'Alerts'],
       accent: 'rgb(255,69,56)',
-      url: 'https://trafficcam.app',
+      url: 'https://traffic-camera-alert.replit.app/',
     },
   ],
 
