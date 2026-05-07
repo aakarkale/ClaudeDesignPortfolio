@@ -38,6 +38,7 @@ jobs:
           cp -r css _site/
           cp -r dist _site/
           cp -r papers _site/
+          cp -r assets _site/
 
       - uses: actions/configure-pages@v5
 
