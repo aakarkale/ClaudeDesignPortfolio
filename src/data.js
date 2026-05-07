@@ -12,12 +12,8 @@ export const AK_DATA = {
   stats: [
     { num: '10+', label: 'Years in tech' },
     { num: '6+',  label: 'Years in product' },
-    { num: '10+', label: 'Products shipped' },
     { num: '3M+', label: 'Users impacted' },
     { num: '180+', label: 'Usability sessions' },
-    { num: '50k+', label: 'Books sold as founder' },
-    { num: '$1.45M', label: 'Funding unlocked' },
-    { num: '2×', label: 'Masters degrees' },
   ],
 
   about: [
