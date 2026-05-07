@@ -12,8 +12,8 @@ export const AK_DATA = {
   stats: [
     { num: '10+', label: 'Years in tech' },
     { num: '6',  label: 'Years in product' },
-    { num: '3M+', label: 'Users impacted' },
-    { num: '180+', label: 'Usability sessions' },
+    { num: '3M+', label: 'Users served' },
+    { num: '60+', label: 'Experiments shipped' },
   ],
 
   about: [
