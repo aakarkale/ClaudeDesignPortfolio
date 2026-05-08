@@ -162,8 +162,7 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChang
         onMouseLeave={handleLogoLeave}
         onMouseDown={startPress} onMouseUp={cancelPress}
         onTouchStart={startPress} onTouchEnd={cancelPress} onTouchCancel={cancelPress}
-        aria-label="Toggle theme (long-press for a surprise)"
-        title="Toggle theme · long-press for a surprise"
+        aria-label="Toggle theme"
       >
         <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
           {theme === 'dark' ? 'AK.' : 'AK.'}
