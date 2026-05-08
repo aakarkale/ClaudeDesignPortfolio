@@ -117,7 +117,7 @@ export function CustomCursor({ theme }) {
 }
 
 // ─── Topbar ──────────────────────────────────────────────────────────
-export function Topbar({ theme, onToggleTheme, onLogoLongPress }) {
+export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChange }) {
   const pressTimer = useRef(null);
   const [pressing, setPressing] = useState(false);
 
@@ -131,6 +131,11 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress }) {
   const cancelPress = () => {
     clearTimeout(pressTimer.current);
     setPressing(false);
+  };
+  const handleLogoEnter = () => onLogoHoverChange?.(true);
+  const handleLogoLeave = () => {
+    cancelPress();
+    onLogoHoverChange?.(false);
   };
 
   const [active, setActive] = useState('home');
@@ -153,7 +158,9 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress }) {
       <button
         className={`logo-btn ${pressing ? 'pressing' : ''}`}
         onClick={onToggleTheme}
-        onMouseDown={startPress} onMouseUp={cancelPress} onMouseLeave={cancelPress}
+        onMouseEnter={handleLogoEnter}
+        onMouseLeave={handleLogoLeave}
+        onMouseDown={startPress} onMouseUp={cancelPress}
         onTouchStart={startPress} onTouchEnd={cancelPress} onTouchCancel={cancelPress}
         aria-label="Toggle theme (long-press for a surprise)"
         title="Toggle theme · long-press for a surprise"

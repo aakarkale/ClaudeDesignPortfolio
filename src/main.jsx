@@ -14,6 +14,7 @@ function App() {
   const [konami, setKonami] = useState(false);
   const [konamiToast, setKonamiToast] = useState(false);
   const [lpToast, setLpToast] = useState(false);
+  const [logoHover, setLogoHover] = useState(false);
   const data = AK_DATA;
 
   useReveal();
@@ -44,15 +45,6 @@ function App() {
   const handleLongPress = useCallback(() => {
     setLpToast(true);
     setTimeout(() => setLpToast(false), 2200);
-    const flash = document.createElement('div');
-    flash.style.cssText = `
-      position:fixed; inset:0; pointer-events:none; z-index:9998;
-      background: radial-gradient(circle at 28px 28px, var(--accent), transparent 40%);
-      opacity:0; transition: opacity 400ms;
-    `;
-    document.body.appendChild(flash);
-    requestAnimationFrame(() => flash.style.opacity = '0.5');
-    setTimeout(() => { flash.style.opacity = '0'; setTimeout(()=> flash.remove(), 500); }, 600);
   }, []);
 
   const projectList = konami
@@ -62,7 +54,13 @@ function App() {
   return (
     <>
       <CustomCursor theme={theme} />
-      <Topbar theme={theme} onToggleTheme={toggleTheme} onLogoLongPress={handleLongPress} />
+      <div className={`logo-glow ${logoHover ? 'on' : ''}`} aria-hidden="true" />
+      <Topbar
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onLogoLongPress={handleLongPress}
+        onLogoHoverChange={setLogoHover}
+      />
       <main>
         <Hero theme={theme} data={data} />
         <About data={data} />

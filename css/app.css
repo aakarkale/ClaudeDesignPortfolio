@@ -197,6 +197,36 @@ html { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .logo-btn:hover { transform: scale(0.96); }
 .logo-btn:active { transform: scale(0.92); }
 
+/* Soft accent glow that pulses in when the cursor is over the logo.
+   Lives at the App root so it can sit between the page and the topbar. */
+.logo-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  opacity: 0;
+  transition: opacity 420ms cubic-bezier(.2,.8,.2,1);
+  background: radial-gradient(
+    circle at 28px 28px,
+    var(--accent) 0%,
+    transparent 42%
+  );
+}
+@media (min-width: 768px) {
+  .logo-glow {
+    background: radial-gradient(
+      circle at 32px 32px,
+      var(--accent) 0%,
+      transparent 44%
+    );
+  }
+}
+.logo-glow.on { opacity: 0.42; }
+:root[data-theme='light'] .logo-glow.on { opacity: 0.55; }
+@media (hover: none) {
+  .logo-glow { display: none; }
+}
+
 .theme-toggle {
   all: unset; cursor: pointer;
   display: inline-flex; align-items: center; gap: 8px;
