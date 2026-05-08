@@ -239,7 +239,7 @@ function DarkHeroTitle() {
     <>
       <span className="hero-line">
         <span className="hero-word">Aakar</span>{' '}
-        <span className="hero-word hero-word-accent">Kale<span id="hero-dot" title="hover me...">.</span></span>
+        <span className="hero-word hero-word-accent">Kale<span id="hero-dot">.</span></span>
       </span>
       <span className="hero-line hero-line-sub">
         <span className="hero-word-ghost">Senior Product Manager,</span>
