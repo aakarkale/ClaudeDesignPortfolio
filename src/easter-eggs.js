@@ -397,6 +397,79 @@
     },{passive:true});
   }
 
+  // ─── Hover hints — small chip prompting the egg interaction ──────
+  function initEggHints() {
+    // Touch / coarse-pointer devices: hover doesn't apply, skip entirely.
+    if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
+
+    const HINTS = [
+      { sel: '.hero-title',  text: 'Triple-click for a surprise' },
+      { sel: '#hero-dot',    text: 'Hover for 5 seconds…' },
+      { sel: '.footer-sig',  text: 'Click 5 times' },
+      { sel: '.logo-btn',    text: 'Press and hold' },
+      { sel: '.stat',        text: 'Double-click for a number trick' },
+    ];
+
+    const chip = document.createElement('div');
+    chip.className = 'egg-hint';
+    chip.setAttribute('aria-hidden', 'true');
+    chip.innerHTML = '<span class="egg-hint-dot"></span><span class="egg-hint-text"></span>';
+    document.body.appendChild(chip);
+    const chipText = chip.querySelector('.egg-hint-text');
+
+    let showTimer = null;
+    let currentEl = null;
+
+    const place = (el) => {
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2 + window.scrollX;
+      // Position below the element by default, flip above if near viewport bottom
+      const flipUp = (r.bottom + 64) > window.innerHeight;
+      const cy = flipUp
+        ? r.top - 12 + window.scrollY
+        : r.bottom + 12 + window.scrollY;
+      chip.style.left = cx + 'px';
+      chip.style.top  = cy + 'px';
+      chip.classList.toggle('egg-hint-up', flipUp);
+    };
+
+    const hide = () => {
+      clearTimeout(showTimer);
+      currentEl = null;
+      chip.classList.remove('on');
+    };
+
+    document.addEventListener('mouseover', (e) => {
+      let hit = null;
+      for (const h of HINTS) {
+        const el = e.target.closest(h.sel);
+        if (el) { hit = { el, text: h.text }; break; }
+      }
+      if (!hit) return;
+      if (hit.el === currentEl) return;
+      currentEl = hit.el;
+      clearTimeout(showTimer);
+      showTimer = setTimeout(() => {
+        if (!currentEl) return;
+        chipText.textContent = hit.text;
+        place(currentEl);
+        chip.classList.add('on');
+      }, 1100);
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      if (!currentEl) return;
+      // Only hide if the cursor truly left the current element
+      if (e.relatedTarget && currentEl.contains(e.relatedTarget)) return;
+      hide();
+    });
+
+    // Re-position if user scrolls while a hint is visible
+    window.addEventListener('scroll', () => {
+      if (currentEl && chip.classList.contains('on')) place(currentEl);
+    }, { passive: true });
+  }
+
   // ─── Mount ────────────────────────────────────────────────────────
   window.initEasterEggs = function() {
     initHeroGlitch();
@@ -410,6 +483,7 @@
     initMobileSwipeUpStar();
     initMobileCardLongPress();
     initMobileSwipeRight();
+    initEggHints();
     window.__confettiBurst = confettiBurst;
     window.__showToast = showToast;
     console.log('%c🥚 11 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');

@@ -1130,3 +1130,61 @@
   .hero-tagline { font-size: 16px; }
   .about-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ============================================================
+   Easter-egg hover hints — small chip anchored to trigger element
+   ============================================================ */
+.egg-hint {
+  position: absolute;
+  z-index: 9960;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 12px;
+  border-radius: 100px;
+  width: max-content;
+  white-space: nowrap;
+  background: rgba(16, 16, 17, 0.94);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font: 500 12px/1.2 var(--font-mono);
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  opacity: 0;
+  transform: translate(-50%, 4px) scale(0.96);
+  transform-origin: top center;
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+.egg-hint.on {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+.egg-hint.egg-hint-up {
+  transform-origin: bottom center;
+  transform: translate(-50%, calc(-100% - 4px)) scale(0.96);
+}
+.egg-hint.egg-hint-up.on {
+  transform: translate(-50%, -100%) scale(1);
+}
+.egg-hint-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  flex-shrink: 0;
+}
+:root[data-theme='light'] .egg-hint {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: var(--text-1);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  box-shadow: 3px 3px 0 var(--text-1), 0 8px 20px rgba(0,0,0,0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+@media (hover: none) {
+  .egg-hint { display: none; }
+}
