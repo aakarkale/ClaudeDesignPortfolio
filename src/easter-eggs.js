@@ -405,7 +405,7 @@
       { sel: '.hero-time',   text: 'Hover here for 5 seconds…' },
       { sel: '.footer-sig',  text: 'Click 5 times' },
       { sel: '.logo-btn',    text: 'Press and hold' },
-      { sel: '.stat',        text: 'Double-click for a number trick' },
+      { sel: '.stat',        text: 'Try double-clicking!' },
       { sel: '#work',        text: 'Try: ↑ ↑ ↓ ↓ ← → ← → B A' },
     ];
 
