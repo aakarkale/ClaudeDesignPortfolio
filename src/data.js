@@ -128,7 +128,7 @@ export const AK_DATA = {
       index: '06',
       title: 'Traffic Camera Alert',
       oneLiner: 'Born from one expensive lesson at a notorious SF intersection.',
-      tags: ['Computer Vision', 'Real-time', 'Alerts'],
+      tags: ['Real-time', 'Alerts'],
       accent: 'rgb(255,69,56)',
       url: 'https://traffic-camera-alert.replit.app/',
     },
