@@ -110,7 +110,7 @@ export const AK_DATA = {
       index: '04',
       title: 'PhotoCloudCRM',
       oneLiner: 'AI-integrated photo business platform with built-in CRM workflows.',
-      tags: ['CRM', 'SaaS', 'Lovable'],
+      tags: ['CRM', 'SaaS'],
       accent: 'rgb(255,221,85)',
       url: 'https://photo-cloud-studio.replit.app/',
     },
