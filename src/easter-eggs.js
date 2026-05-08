@@ -261,38 +261,7 @@
     });
   }
 
-  // ─── 6. Double-click stat → counter animation ────────────────────
-  function initStatCounter() {
-    document.addEventListener('dblclick', e=>{
-      const stat = e.target.closest('.stat');
-      if (!stat) return;
-      const numEl = stat.querySelector('.stat-num');
-      if (!numEl) return;
-      const orig = numEl.textContent.trim();
-      const match = orig.match(/[\d.]+/);
-      if (!match) return;
-      const target=parseFloat(match[0]);
-      const pre=orig.slice(0,orig.indexOf(match[0]));
-      const suf=orig.slice(orig.indexOf(match[0])+match[0].length);
-      const isFloat=match[0].includes('.');
-      const FRAMES=34; let frame=0;
-      const origBorder=stat.style.borderColor, origTr=stat.style.transform;
-      stat.style.cssText += ';border-color:var(--accent) !important;transform:scale(1.1);transition:border-color 200ms,transform 200ms;';
-      const id=setInterval(()=>{
-        if (frame>=FRAMES) {
-          clearInterval(id); numEl.textContent=orig;
-          stat.style.borderColor=origBorder; stat.style.transform=origTr;
-          return;
-        }
-        const ease=1-Math.pow(1-frame/FRAMES,3);
-        const v=target*ease;
-        numEl.textContent=pre+(isFloat?v.toFixed(1):Math.round(v))+suf;
-        frame++;
-      }, 38);
-    });
-  }
-
-  // ─── 7. Shake (mobile) → rainbow ripple ──────────────────────────
+  // ─── 6. Shake (mobile) → rainbow ripple ──────────────────────────
   function initShake() {
     if (!window.DeviceMotionEvent) return;
     let last={x:0,y:0,z:0}, lastTime=0;
@@ -405,7 +374,6 @@
       { sel: '.hero-time',   text: 'Hover here for 5 seconds…' },
       { sel: '.footer-sig',  text: 'Click 5 times' },
       { sel: '.logo-btn',    text: 'Press and hold' },
-      { sel: '.stat',        text: 'Try double-clicking!' },
       { sel: '#work',        text: 'Try: ↑ ↑ ↓ ↓ ← → ← → B A' },
     ];
 
@@ -463,7 +431,6 @@
     initTypeYay();
     initHeroQuote();
     initFooterSig();
-    initStatCounter();
     initShake();
     initStatAchievement();
     initMobilePinch();
@@ -473,7 +440,7 @@
     initEggHints();
     window.__confettiBurst = confettiBurst;
     window.__showToast = showToast;
-    console.log('%c🥚 11 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
+    console.log('%c🥚 10 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
   };
 
 })();

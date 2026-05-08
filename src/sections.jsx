@@ -5,6 +5,64 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { SectionHead } from './chrome.jsx';
 
+// ─── Stat — count-up animation triggered by hover ────────────────────
+function Stat({ num, label, i }) {
+  const [val, setVal] = useState(num);
+  const [hovering, setHovering] = useState(false);
+  const animRef = useRef(null);
+
+  const stop = () => {
+    if (animRef.current) {
+      clearInterval(animRef.current);
+      animRef.current = null;
+    }
+  };
+
+  const onEnter = () => {
+    setHovering(true);
+    const m = num.match(/[\d.]+/);
+    if (!m) return;
+    const target = parseFloat(m[0]);
+    const pre = num.slice(0, num.indexOf(m[0]));
+    const suf = num.slice(num.indexOf(m[0]) + m[0].length);
+    const isFloat = m[0].includes('.');
+    const FRAMES = 34;
+    let frame = 0;
+    stop();
+    animRef.current = setInterval(() => {
+      if (frame >= FRAMES) {
+        stop();
+        setVal(num);
+        return;
+      }
+      const ease = 1 - Math.pow(1 - frame / FRAMES, 3);
+      const v = target * ease;
+      setVal(pre + (isFloat ? v.toFixed(1) : Math.round(v)) + suf);
+      frame++;
+    }, 38);
+  };
+
+  const onLeave = () => {
+    setHovering(false);
+    stop();
+    setVal(num);
+  };
+
+  useEffect(() => () => stop(), []);
+
+  return (
+    <div
+      className={`stat ${hovering ? 'stat-hover' : ''}`}
+      style={{ '--i': i }}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+    >
+      <div className="stat-num">{val}</div>
+      <div className="stat-label">{label}</div>
+    </div>
+  );
+}
+
 // ─── About ───────────────────────────────────────────────────────────
 export function About({ data }) {
   return (
@@ -34,10 +92,7 @@ export function About({ data }) {
 
         <div className="about-stats-grid reveal">
           {data.stats.map((s, i) => (
-            <div className="stat" key={i} style={{ '--i': i }}>
-              <div className="stat-num">{s.num}</div>
-              <div className="stat-label">{s.label}</div>
-            </div>
+            <Stat key={i} num={s.num} label={s.label} i={i} />
           ))}
         </div>
       </div>
