@@ -233,17 +233,16 @@
     };
 
     const tryInit = () => {
-      const dot = document.getElementById('hero-dot');
-      if (!dot) return setTimeout(tryInit, 600);
-      dot.style.cursor = 'default';
+      const trigger = document.querySelector('.hero-time');
+      if (!trigger) return setTimeout(tryInit, 600);
       let hoverTimer, touchTimer;
 
-      dot.addEventListener('mouseenter', ()=>{ hoverTimer = setTimeout(showBox, 5000); });
-      dot.addEventListener('mouseleave', ()=>clearTimeout(hoverTimer));
+      trigger.addEventListener('mouseenter', ()=>{ hoverTimer = setTimeout(showBox, 5000); });
+      trigger.addEventListener('mouseleave', ()=>clearTimeout(hoverTimer));
 
-      dot.addEventListener('touchstart', ()=>{ touchTimer = setTimeout(showBox, 800); }, {passive:true});
-      dot.addEventListener('touchend',   ()=>clearTimeout(touchTimer));
-      dot.addEventListener('touchmove',  ()=>clearTimeout(touchTimer));
+      trigger.addEventListener('touchstart', ()=>{ touchTimer = setTimeout(showBox, 800); }, {passive:true});
+      trigger.addEventListener('touchend',   ()=>clearTimeout(touchTimer));
+      trigger.addEventListener('touchmove',  ()=>clearTimeout(touchTimer));
     };
     setTimeout(tryInit, 800);
   }
@@ -403,7 +402,7 @@
 
     const HINTS = [
       { sel: '.hero-title',  text: 'Triple-click for a surprise' },
-      { sel: '#hero-dot',    text: 'Hover for 5 seconds…' },
+      { sel: '.hero-time',   text: 'Hover here for 5 seconds…' },
       { sel: '.footer-sig',  text: 'Click 5 times' },
       { sel: '.logo-btn',    text: 'Press and hold' },
       { sel: '.stat',        text: 'Double-click for a number trick' },
