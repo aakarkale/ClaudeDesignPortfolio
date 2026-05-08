@@ -397,9 +397,8 @@
     },{passive:true});
   }
 
-  // ─── Hover hints — small chip prompting the egg interaction ──────
+  // ─── Hover hints — chip follows the cursor while inside an egg region ─
   function initEggHints() {
-    // Touch / coarse-pointer devices: hover doesn't apply, skip entirely.
     if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
 
     const HINTS = [
@@ -408,6 +407,7 @@
       { sel: '.footer-sig',  text: 'Click 5 times' },
       { sel: '.logo-btn',    text: 'Press and hold' },
       { sel: '.stat',        text: 'Double-click for a number trick' },
+      { sel: '#work',        text: 'Try: ↑ ↑ ↓ ↓ ← → ← → B A' },
     ];
 
     const chip = document.createElement('div');
@@ -417,57 +417,45 @@
     document.body.appendChild(chip);
     const chipText = chip.querySelector('.egg-hint-text');
 
-    let showTimer = null;
     let currentEl = null;
+    let lastX = 0, lastY = 0;
 
-    const place = (el) => {
-      const r = el.getBoundingClientRect();
-      const cx = r.left + r.width / 2 + window.scrollX;
-      // Position below the element by default, flip above if near viewport bottom
-      const flipUp = (r.bottom + 64) > window.innerHeight;
-      const cy = flipUp
-        ? r.top - 12 + window.scrollY
-        : r.bottom + 12 + window.scrollY;
-      chip.style.left = cx + 'px';
-      chip.style.top  = cy + 'px';
+    const place = (x, y) => {
+      // Default: chip below the cursor; flip above if near the viewport bottom
+      const flipUp = (y + 90) > window.innerHeight;
       chip.classList.toggle('egg-hint-up', flipUp);
+      chip.style.left = x + 'px';
+      chip.style.top  = y + 'px';
     };
 
-    const hide = () => {
-      clearTimeout(showTimer);
+    const findHit = (target) => {
+      for (const h of HINTS) {
+        const el = target.closest(h.sel);
+        if (el) return { el, text: h.text };
+      }
+      return null;
+    };
+
+    document.addEventListener('mousemove', (e) => {
+      lastX = e.clientX; lastY = e.clientY;
+      const hit = findHit(e.target);
+      if (hit) {
+        if (hit.el !== currentEl) {
+          currentEl = hit.el;
+          chipText.textContent = hit.text;
+          chip.classList.add('on');
+        }
+        place(lastX, lastY);
+      } else if (currentEl) {
+        currentEl = null;
+        chip.classList.remove('on');
+      }
+    }, { passive: true });
+
+    document.addEventListener('mouseleave', () => {
       currentEl = null;
       chip.classList.remove('on');
-    };
-
-    document.addEventListener('mouseover', (e) => {
-      let hit = null;
-      for (const h of HINTS) {
-        const el = e.target.closest(h.sel);
-        if (el) { hit = { el, text: h.text }; break; }
-      }
-      if (!hit) return;
-      if (hit.el === currentEl) return;
-      currentEl = hit.el;
-      clearTimeout(showTimer);
-      showTimer = setTimeout(() => {
-        if (!currentEl) return;
-        chipText.textContent = hit.text;
-        place(currentEl);
-        chip.classList.add('on');
-      }, 1100);
     });
-
-    document.addEventListener('mouseout', (e) => {
-      if (!currentEl) return;
-      // Only hide if the cursor truly left the current element
-      if (e.relatedTarget && currentEl.contains(e.relatedTarget)) return;
-      hide();
-    });
-
-    // Re-position if user scrolls while a hint is visible
-    window.addEventListener('scroll', () => {
-      if (currentEl && chip.classList.contains('on')) place(currentEl);
-    }, { passive: true });
   }
 
   // ─── Mount ────────────────────────────────────────────────────────

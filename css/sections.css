@@ -1132,10 +1132,11 @@
 }
 
 /* ============================================================
-   Easter-egg hover hints — small chip anchored to trigger element
+   Easter-egg hover hints — chip follows the cursor inside an egg region
    ============================================================ */
 .egg-hint {
-  position: absolute;
+  position: fixed;
+  /* left/top set inline from JS to cursor coords (clientX/clientY) */
   z-index: 9960;
   pointer-events: none;
   display: inline-flex;
@@ -1144,6 +1145,7 @@
   padding: 8px 14px 8px 12px;
   border-radius: 100px;
   width: max-content;
+  max-width: min(420px, 80vw);
   white-space: nowrap;
   background: rgba(16, 16, 17, 0.94);
   border: 1px solid var(--border);
@@ -1153,21 +1155,15 @@
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  /* Default: chip sits 28px below the cursor, horizontally centered on it */
+  transform: translate(-50%, 28px);
   opacity: 0;
-  transform: translate(-50%, 4px) scale(0.96);
-  transform-origin: top center;
-  transition: opacity 180ms ease, transform 220ms cubic-bezier(.2,.8,.2,1);
+  transition: opacity 150ms ease;
 }
-.egg-hint.on {
-  opacity: 1;
-  transform: translate(-50%, 0) scale(1);
-}
+.egg-hint.on { opacity: 1; }
 .egg-hint.egg-hint-up {
-  transform-origin: bottom center;
-  transform: translate(-50%, calc(-100% - 4px)) scale(0.96);
-}
-.egg-hint.egg-hint-up.on {
-  transform: translate(-50%, -100%) scale(1);
+  /* Flipped: chip sits 28px above the cursor */
+  transform: translate(-50%, calc(-100% - 28px));
 }
 .egg-hint-dot {
   width: 6px; height: 6px; border-radius: 50%;
