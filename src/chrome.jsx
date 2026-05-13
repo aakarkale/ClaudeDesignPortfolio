@@ -39,6 +39,20 @@ export function useTheme() {
 export function useReveal() {
   useEffect(() => {
     let cancelled = false;
+    let io;
+    let mo;
+
+    const inView = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.top < window.innerHeight * 1.1 && r.bottom > -40;
+    };
+
+    const observeLate = (el) => {
+      if (!el || el.classList.contains('in')) return;
+      if (inView(el)) { el.classList.add('in'); return; }
+      if (io) io.observe(el);
+    };
+
     const run = () => {
       if (cancelled) return;
       const all = document.querySelectorAll('.reveal');
@@ -46,28 +60,48 @@ export function useReveal() {
         all.forEach(e => e.classList.add('in'));
         return;
       }
+      if (!io) {
+        io = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              e.target.classList.add('in');
+              io.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
+      }
       let i = 0;
       all.forEach((el) => {
         if (el.classList.contains('in')) return;
-        const r = el.getBoundingClientRect();
-        if (r.top < window.innerHeight * 1.1 && r.bottom > -40) {
+        if (inView(el)) {
           setTimeout(() => el.classList.add('in'), i * 70);
           i++;
+        } else {
+          io.observe(el);
         }
       });
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
+      // Pick up .reveal nodes added later (e.g. after a media-query swap).
+      if (!mo) {
+        mo = new MutationObserver((muts) => {
+          muts.forEach((m) => {
+            m.addedNodes.forEach((n) => {
+              if (n.nodeType !== 1) return;
+              if (n.classList && n.classList.contains('reveal')) observeLate(n);
+              if (n.querySelectorAll) n.querySelectorAll('.reveal:not(.in)').forEach(observeLate);
+            });
+          });
         });
-      }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
-      document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
+        mo.observe(document.body, { childList: true, subtree: true });
+      }
     };
     const t1 = setTimeout(run, 50);
     const t2 = setTimeout(run, 500);
-    return () => { cancelled = true; clearTimeout(t1); clearTimeout(t2); };
+    return () => {
+      cancelled = true;
+      clearTimeout(t1); clearTimeout(t2);
+      if (io) io.disconnect();
+      if (mo) mo.disconnect();
+    };
   }, []);
 }
 
