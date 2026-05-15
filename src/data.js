@@ -13,7 +13,7 @@ export const AK_DATA = {
     { num: '10+', label: 'Years in tech' },
     { num: '6',  label: 'Years in product' },
     { num: '3M+', label: 'Users served' },
-    { num: '5', label: 'Industries' },
+    { num: '5', label: 'Industries', tooltip: 'Shipped across 5 Industries — Auto-Retail, Healthcare, Telecom, Venture Capital, Consumer Retail' },
   ],
 
   about: [

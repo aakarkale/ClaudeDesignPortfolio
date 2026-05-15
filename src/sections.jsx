@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { SectionHead } from './chrome.jsx';
 
 // ─── Stat — count-up animation triggered by hover ────────────────────
-function Stat({ num, label, i }) {
+function Stat({ num, label, tooltip, i }) {
   const [val, setVal] = useState(num);
   const [hovering, setHovering] = useState(false);
   const animRef = useRef(null);
@@ -59,6 +59,12 @@ function Stat({ num, label, i }) {
     >
       <div className="stat-num">{val}</div>
       <div className="stat-label">{label}</div>
+      {tooltip && (
+        <div className="stat-tooltip" role="tooltip" aria-hidden={!hovering}>
+          <div className="stat-tooltip-card">{tooltip}</div>
+          <div className="stat-tooltip-arrow" />
+        </div>
+      )}
     </div>
   );
 }
@@ -92,7 +98,7 @@ export function About({ data }) {
 
         <div className="about-stats-grid reveal">
           {data.stats.map((s, i) => (
-            <Stat key={i} num={s.num} label={s.label} i={i} />
+            <Stat key={i} num={s.num} label={s.label} tooltip={s.tooltip} i={i} />
           ))}
         </div>
       </div>
