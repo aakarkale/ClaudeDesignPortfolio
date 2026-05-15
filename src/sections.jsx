@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { SectionHead } from './chrome.jsx';
 
 // ─── Stat — count-up animation triggered by hover ────────────────────
-function Stat({ num, label, tooltip, i }) {
+function Stat({ num, label, tooltip, tooltipBend, i }) {
   const [val, setVal] = useState(num);
   const [hovering, setHovering] = useState(false);
   const animRef = useRef(null);
@@ -60,9 +60,31 @@ function Stat({ num, label, tooltip, i }) {
       <div className="stat-num">{val}</div>
       <div className="stat-label">{label}</div>
       {tooltip && (
-        <div className="stat-tooltip" role="tooltip" aria-hidden={!hovering}>
+        <div
+          className={`stat-tooltip${tooltipBend ? ' stat-tooltip--bent' : ''}`}
+          role="tooltip"
+          aria-hidden={!hovering}
+        >
           <div className="stat-tooltip-card">{tooltip}</div>
-          <div className="stat-tooltip-arrow" />
+          {tooltipBend === 'curve' ? (
+            <svg
+              className="stat-tooltip-arrow-svg"
+              viewBox="0 0 60 96"
+              width="60"
+              height="96"
+              aria-hidden="true"
+            >
+              <path
+                d="M 30 2 C 58 28, 4 60, 30 92"
+                fill="none"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <polygon points="24,86 36,86 30,96" />
+            </svg>
+          ) : (
+            <div className="stat-tooltip-arrow" />
+          )}
         </div>
       )}
     </div>
@@ -98,7 +120,14 @@ export function About({ data }) {
 
         <div className="about-stats-grid reveal">
           {data.stats.map((s, i) => (
-            <Stat key={i} num={s.num} label={s.label} tooltip={s.tooltip} i={i} />
+            <Stat
+              key={i}
+              num={s.num}
+              label={s.label}
+              tooltip={s.tooltip}
+              tooltipBend={s.tooltipBend}
+              i={i}
+            />
           ))}
         </div>
       </div>
