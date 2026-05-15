@@ -61,30 +61,44 @@ function Stat({ num, label, tooltip, tooltipBend, i }) {
       <div className="stat-label">{label}</div>
       {tooltip && (
         <div
-          className={`stat-tooltip${tooltipBend ? ' stat-tooltip--bent' : ''}`}
+          className={`stat-tooltip stat-tooltip--${tooltipBend === 'reverseL' ? 'rL' : 'L'}`}
           role="tooltip"
           aria-hidden={!hovering}
         >
-          <div className="stat-tooltip-card">{tooltip}</div>
-          {tooltipBend === 'curve' ? (
+          {tooltipBend === 'reverseL' ? (
             <svg
-              className="stat-tooltip-arrow-svg"
-              viewBox="0 0 60 96"
+              className="stat-tooltip-Larrow"
+              viewBox="0 0 60 50"
               width="60"
-              height="96"
+              height="50"
               aria-hidden="true"
             >
+              <polygon points="52,10 60,10 56,0" />
               <path
-                d="M 30 2 C 58 28, 4 60, 30 92"
+                d="M 56 10 L 56 25 Q 56 40 41 40 L 4 40"
                 fill="none"
                 strokeWidth="1.5"
                 strokeLinecap="round"
               />
-              <polygon points="24,86 36,86 30,96" />
             </svg>
           ) : (
-            <div className="stat-tooltip-arrow" />
+            <svg
+              className="stat-tooltip-Larrow"
+              viewBox="0 0 60 50"
+              width="60"
+              height="50"
+              aria-hidden="true"
+            >
+              <polygon points="0,10 8,10 4,0" />
+              <path
+                d="M 4 10 L 4 25 Q 4 40 19 40 L 56 40"
+                fill="none"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
           )}
+          <div className="stat-tooltip-card">{tooltip}</div>
         </div>
       )}
     </div>

@@ -10,10 +10,10 @@ export const AK_DATA = {
   origin: 'Mumbai, India',
 
   stats: [
-    { num: '10+', label: 'Years in tech', tooltip: 'from Founder to Project Manager to Consultant to Product Manager', tooltipBend: 'curve' },
+    { num: '10+', label: 'Years in tech', tooltip: 'From Founder to Project Manager to Consultant to Product Manager', tooltipBend: 'L' },
     { num: '6',  label: 'Years in product' },
     { num: '3M+', label: 'Users served' },
-    { num: '5', label: 'Industries', tooltip: 'Shipped across 5 Industries — Auto-Retail, Healthcare, Telecom, Venture Capital, Consumer Retail' },
+    { num: '5', label: 'Industries', tooltip: 'Shipped across 5 Industries — Auto-Retail, Healthcare, Telecom, Venture Capital, Consumer Retail', tooltipBend: 'reverseL' },
   ],
 
   about: [
