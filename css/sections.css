@@ -317,6 +317,18 @@
   border: 1px solid var(--text-1);
   box-shadow: 4px 4px 0 var(--text-1);
 }
+
+/* Curved-arrow tooltip variant */
+.stat-tooltip-arrow-svg {
+  display: block;
+  overflow: visible;
+}
+.stat-tooltip-arrow-svg path {
+  stroke: color-mix(in oklab, var(--accent) 75%, transparent);
+}
+.stat-tooltip-arrow-svg polygon {
+  fill: color-mix(in oklab, var(--accent) 70%, transparent);
+}
 .stat:hover { transform: translateY(-4px); border-color: color-mix(in oklab, var(--accent) 40%, var(--border)); }
 .stat:hover::before { opacity: 1; }
 .stat-num {
