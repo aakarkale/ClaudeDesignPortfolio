@@ -6,7 +6,19 @@ import { createPortal } from 'react-dom';
 import { SectionHead } from './chrome.jsx';
 
 // ─── Stat — count-up animation triggered by hover ────────────────────
-function Stat({ num, label, tooltip, tooltipBend, i }) {
+const STAT_FORMATTERS = {
+  magnitude: (v) => {
+    if (v >= 1_000_000) {
+      const m = v / 1_000_000;
+      const rounded = Math.round(m * 10) / 10;
+      return (rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1)) + 'M';
+    }
+    if (v >= 1_000) return Math.round(v / 1000) + 'k';
+    return Math.round(v).toString();
+  },
+};
+
+function Stat({ num, label, tooltip, tooltipBend, animate, i }) {
   const [val, setVal] = useState(num);
   const [hovering, setHovering] = useState(false);
   const animRef = useRef(null);
@@ -20,15 +32,26 @@ function Stat({ num, label, tooltip, tooltipBend, i }) {
 
   const onEnter = () => {
     setHovering(true);
-    const m = num.match(/[\d.]+/);
-    if (!m) return;
-    const target = parseFloat(m[0]);
-    const pre = num.slice(0, num.indexOf(m[0]));
-    const suf = num.slice(num.indexOf(m[0]) + m[0].length);
-    const isFloat = m[0].includes('.');
     const FRAMES = 34;
     let frame = 0;
     stop();
+
+    let renderFrame;
+    if (animate && STAT_FORMATTERS[animate.fmt]) {
+      const fmt = STAT_FORMATTERS[animate.fmt];
+      const from = animate.from;
+      const to = animate.to;
+      renderFrame = (ease) => fmt(from + (to - from) * ease);
+    } else {
+      const m = num.match(/[\d.]+/);
+      if (!m) return;
+      const target = parseFloat(m[0]);
+      const pre = num.slice(0, num.indexOf(m[0]));
+      const suf = num.slice(num.indexOf(m[0]) + m[0].length);
+      const isFloat = m[0].includes('.');
+      renderFrame = (ease) => pre + (isFloat ? (target * ease).toFixed(1) : Math.round(target * ease)) + suf;
+    }
+
     animRef.current = setInterval(() => {
       if (frame >= FRAMES) {
         stop();
@@ -36,8 +59,7 @@ function Stat({ num, label, tooltip, tooltipBend, i }) {
         return;
       }
       const ease = 1 - Math.pow(1 - frame / FRAMES, 3);
-      const v = target * ease;
-      setVal(pre + (isFloat ? v.toFixed(1) : Math.round(v)) + suf);
+      setVal(renderFrame(ease));
       frame++;
     }, 38);
   };
@@ -140,6 +162,7 @@ export function About({ data }) {
               label={s.label}
               tooltip={s.tooltip}
               tooltipBend={s.tooltipBend}
+              animate={s.animate}
               i={i}
             />
           ))}

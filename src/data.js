@@ -12,7 +12,7 @@ export const AK_DATA = {
   stats: [
     { num: '10+', label: 'Years in tech', tooltip: 'From Founder to Project Manager to Consultant to Product Manager', tooltipBend: 'L' },
     { num: '6',  label: 'Years in product' },
-    { num: '3M+', label: 'Users served' },
+    { num: '3M+', label: 'Users served', animate: { from: 100000, to: 3000000, fmt: 'magnitude' } },
     { num: '5', label: 'Industries', tooltip: 'Shipped across 5 Industries — Auto-Retail, Healthcare, Telecom, Venture Capital, Consumer Retail', tooltipBend: 'reverseL' },
   ],
 
