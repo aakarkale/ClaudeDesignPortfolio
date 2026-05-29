@@ -132,6 +132,15 @@ export const AK_DATA = {
       accent: 'rgb(255,69,56)',
       url: 'https://traffic-camera-alert.replit.app/',
     },
+    {
+      id: 'potluck',
+      index: '07',
+      title: 'Potluck',
+      oneLiner: 'Share one link so everyone sees what’s on the table — no more six identical pasta salads.',
+      tags: ['Events', 'Social', 'Web App'],
+      accent: 'rgb(255,107,53)',
+      url: 'https://potluck.aakarkale.com/',
+    },
   ],
 
   secretProject: {
