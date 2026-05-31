@@ -103,7 +103,7 @@ export const AK_DATA = {
       oneLiner: 'ML-powered health analytics hub for biomarker tracking and personalized insights.',
       tags: ['Machine Learning', 'HealthTech', 'Analytics'],
       accent: 'rgb(255,133,115)',
-      url: 'https://biotracker.replit.app/',
+      url: 'https://bio-tracker-rouge.vercel.app/',
     },
     {
       id: 'photocloud',
