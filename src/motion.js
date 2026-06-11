@@ -107,20 +107,27 @@ export function initMotion() {
   const tiltCard = (card) => {
     if (card.dataset.tilt) return;
     card.dataset.tilt = '1';
-    const qx = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power3.out' });
-    const qy = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power3.out' });
+    const qx = gsap.quickTo(card, 'rotationX', { duration: 0.45, ease: 'power3.out' });
+    const qy = gsap.quickTo(card, 'rotationY', { duration: 0.45, ease: 'power3.out' });
+    // Card face counter-shifts against the rotation — fakes translateZ
+    // depth (real preserve-3d is flattened by the card's overflow:hidden).
+    const face = card.querySelector('.proj-face');
+    const fx = face ? gsap.quickTo(face, 'x', { duration: 0.6, ease: 'power3.out' }) : null;
+    const fy = face ? gsap.quickTo(face, 'y', { duration: 0.6, ease: 'power3.out' }) : null;
     card.addEventListener('pointerenter', () => {
       // Drop transform from the CSS transition so quickTo isn't double-eased.
       card.style.transition = 'border-color 300ms, box-shadow 300ms';
-      gsap.set(card, { transformPerspective: 900 });
-      gsap.to(card, { y: -6, scale: 1.015, duration: 0.4, ease: 'power3.out' });
+      gsap.set(card, { transformPerspective: 850 });
+      gsap.to(card, { y: -8, scale: 1.02, duration: 0.4, ease: 'power3.out' });
     });
     card.addEventListener('pointermove', (e) => {
       const r = card.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width;
       const py = (e.clientY - r.top) / r.height;
-      qy((px - 0.5) * 10);
-      qx((0.5 - py) * 8);
+      qy((px - 0.5) * 14);
+      qx((0.5 - py) * 11);
+      if (fx) fx((px - 0.5) * -10);
+      if (fy) fy((py - 0.5) * -8);
       card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
       card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
     });
@@ -128,6 +135,10 @@ export function initMotion() {
       gsap.to(card, {
         rotationX: 0, rotationY: 0, y: 0, scale: 1, duration: 0.7, ease: 'elastic.out(1, 0.55)',
         onComplete: () => { card.style.transition = ''; gsap.set(card, { clearProps: 'transform' }); },
+      });
+      if (face) gsap.to(face, {
+        x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.55)',
+        onComplete: () => gsap.set(face, { clearProps: 'transform' }),
       });
     });
   };
