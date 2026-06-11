@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { AK_DATA } from './data.js';
-import { useTheme, useReveal, CustomCursor, Topbar, Hero, HeroLoader, Footer } from './chrome.jsx';
+import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer } from './chrome.jsx';
 import { About, Work, Experience, Skills, TechReel, Contact } from './sections.jsx';
 import { initMotion } from './motion.js';
 import './easter-eggs.js';  // side-effect: sets window.initEasterEggs
@@ -16,26 +16,11 @@ function App() {
   const [konamiToast, setKonamiToast] = useState(false);
   const [lpToast, setLpToast] = useState(false);
   const [logoHover, setLogoHover] = useState(false);
-  // Loader plays once per session and is skipped for reduced motion.
-  const [loaderDone, setLoaderDone] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-    try { if (sessionStorage.getItem('ak-loader-seen') === '1') return true; } catch (e) {}
-    return false;
-  });
   const data = AK_DATA;
 
   useReveal();
 
-  useEffect(() => {
-    if (!loaderDone) return;
-    return initMotion();
-  }, [loaderDone]);
-
-  const finishLoader = useCallback(() => {
-    try { sessionStorage.setItem('ak-loader-seen', '1'); } catch (e) {}
-    setLoaderDone(true);
-  }, []);
+  useEffect(() => initMotion(), []);
 
   useEffect(() => {
     const seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
@@ -71,7 +56,6 @@ function App() {
 
   return (
     <>
-      {!loaderDone && <HeroLoader onDone={finishLoader} />}
       <CustomCursor theme={theme} />
       <div className={`logo-glow ${logoHover ? 'on' : ''}`} aria-hidden="true" />
       <Topbar
