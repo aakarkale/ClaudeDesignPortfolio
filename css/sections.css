@@ -85,16 +85,16 @@ section[data-section="hero"] {
   color: var(--text-0);
   display: flex; flex-direction: column; gap: 0;
 }
-.hero-line { display: block; }
+.hero-line { display: block; overflow: hidden; }
 .hero-line-sub { color: var(--text-4); font-size: 0.42em; letter-spacing: -0.02em; font-weight: 500; line-height: 1.05; margin-top: 0.15em; }
-.hero-word { display: inline-block; }
+.hero-word { display: inline-block; transform: translateY(130%); }
 .hero-word-accent {
   background: linear-gradient(135deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
   font-style: italic;
 }
-.hero-word-ghost { color: var(--text-4); font-weight: 500; }
+.hero-word-ghost { display: inline-block; color: var(--text-4); font-weight: 500; transform: translateY(130%); }
 
 /* Light hero — editorial magazine */
 :root[data-theme='light'] .hero-title {
@@ -104,6 +104,7 @@ section[data-section="hero"] {
   border-top: 2px solid var(--text-1);
   border-bottom: 2px solid var(--text-1);
   padding: 20px 0 24px;
+  overflow: hidden;
 }
 .hero-mag-kicker {
   font-family: var(--font-body) !important;
@@ -120,6 +121,7 @@ section[data-section="hero"] {
   letter-spacing: -0.055em !important;
   line-height: 0.88 !important;
   color: var(--text-0) !important;
+  transform: translateY(130%);
 }
 .hero-mag-sub {
   font-family: var(--font-body) !important;
@@ -129,6 +131,7 @@ section[data-section="hero"] {
   text-transform: uppercase;
   color: var(--text-3) !important;
   margin-top: 12px;
+  transform: translateY(130%);
 }
 
 .hero-sub { max-width: 560px; }

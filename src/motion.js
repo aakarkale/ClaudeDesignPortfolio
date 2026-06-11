@@ -10,7 +10,14 @@ export function initMotion() {
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!gsap || !ScrollTrigger || reduced) return () => {};
+  if (!gsap || !ScrollTrigger || reduced) {
+    // CSS pre-hides hero words; since GSAP won't animate them, restore visibility.
+    document.querySelectorAll('.hero-word, .hero-word-ghost, .hero-mag-title, .hero-mag-sub')
+      .forEach((el) => { el.style.transform = 'none'; });
+    document.querySelectorAll('.hero-line')
+      .forEach((el) => { el.style.overflow = 'visible'; });
+    return () => {};
+  }
 
   gsap.registerPlugin(ScrollTrigger);
   const killers = [];
@@ -56,13 +63,6 @@ export function initMotion() {
   const words = gsap.utils.toArray(
     '.hero-title .hero-word, .hero-title .hero-word-ghost, .hero-title .hero-mag-title, .hero-title .hero-mag-sub'
   );
-  // Stamp initial state synchronously (before any paint) so elements never
-  // flash at their rest position between own() and the timeline's first
-  // tick. We use gsap.set + .to instead of .from for this reason.
-  if (words.length) {
-    lines.forEach((l) => { l.style.overflow = 'hidden'; });
-    gsap.set(words, { display: 'inline-block', yPercent: 130 });
-  }
   const heroDot = document.querySelector('#hero-dot');
   if (heroDot) gsap.set(heroDot, { scale: 0, display: 'inline-block', transformOrigin: '50% 70%' });
   gsap.set('.hero-meta',         { autoAlpha: 0, y: -16 });
@@ -72,9 +72,9 @@ export function initMotion() {
 
   const intro = gsap.timeline({
     defaults: { ease: 'power4.out' },
-    onComplete: () => lines.forEach((l) => { l.style.overflow = ''; }),
+    onComplete: () => lines.forEach((l) => { l.style.overflow = 'visible'; }),
   });
-  if (words.length) intro.to(words, { yPercent: 0, duration: 0.85, stagger: 0.055 }, 0);
+  if (words.length) intro.to(words, { yPercent: 0, duration: 1.1, stagger: 0.09 }, 0);
   if (heroDot) intro.to(heroDot, {
     scale: 1, ease: 'elastic.out(1, 0.45)', duration: 0.9,
   }, 0.42);
