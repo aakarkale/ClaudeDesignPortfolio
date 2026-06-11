@@ -269,6 +269,72 @@ export function Hero({ theme, data }) {
   );
 }
 
+// ─── HeroLoader — intro loader: 0 → 100% sweep, then reveals hero ────
+export function HeroLoader({ onDone }) {
+  const [pct, setPct] = useState(0);
+  const [exiting, setExiting] = useState(false);
+  const rafRef = useRef(0);
+  const skippedRef = useRef(false);
+
+  useEffect(() => {
+    const DURATION = 2200;
+    const HOLD = 280;
+    const EXIT = 760;
+    const start = performance.now();
+
+    const finish = () => {
+      setExiting(true);
+      setTimeout(() => onDone(), EXIT);
+    };
+
+    const tick = (now) => {
+      if (skippedRef.current) return;
+      const t = Math.min(1, (now - start) / DURATION);
+      // ease-out-quart: fast then luxuriously decelerates to 100
+      const eased = 1 - Math.pow(1 - t, 4);
+      setPct(Math.round(eased * 100));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+      else setTimeout(finish, HOLD);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+
+    const skip = () => {
+      if (skippedRef.current) return;
+      skippedRef.current = true;
+      cancelAnimationFrame(rafRef.current);
+      setPct(100);
+      finish();
+    };
+    document.addEventListener('keydown', skip);
+    document.addEventListener('pointerdown', skip);
+    // Don't let the page scroll while the loader is up
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      document.removeEventListener('keydown', skip);
+      document.removeEventListener('pointerdown', skip);
+      document.body.style.overflow = prev;
+    };
+  }, [onDone]);
+
+  return (
+    <div className={`hero-loader ${exiting ? 'exit' : ''}`} role="status" aria-label="Loading">
+      <div className="hero-loader-tl">
+        <span className="hero-loader-sig">Aakar Kale</span>
+        <sup className="hero-loader-mark">®</sup>
+      </div>
+      <div className="hero-loader-br">Portfolio — Vol. 01</div>
+      <div className="hero-loader-counter">
+        <span className="hero-loader-num">{pct}</span>
+        <span className="hero-loader-pct">%</span>
+      </div>
+      <div className="hero-loader-bar" style={{ transform: `scaleX(${pct / 100})` }} />
+    </div>
+  );
+}
+
 function HeroBackdrop() {
   // 8-pointed starburst evoking the Fable 5 set: two long primary rays
   // (vertical + horizontal) and two shorter diagonals. Slow rotation +
