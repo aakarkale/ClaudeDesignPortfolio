@@ -187,8 +187,17 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChang
     return () => io.disconnect();
   }, []);
 
+  // Transparent over the hero backdrop at the top; frosted once scrolled.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <div className="topbar">
+    <div className={`topbar ${scrolled ? '' : 'at-top'}`}>
       <button
         className={`logo-btn ${pressing ? 'pressing' : ''}`}
         onClick={onToggleTheme}
