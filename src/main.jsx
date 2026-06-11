@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { AK_DATA } from './data.js';
 import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer } from './chrome.jsx';
 import { About, Work, Experience, Skills, TechReel, Contact } from './sections.jsx';
+import { initMotion } from './motion.js';
 import './easter-eggs.js';  // side-effect: sets window.initEasterEggs
 
 function App() {
@@ -18,6 +19,8 @@ function App() {
   const data = AK_DATA;
 
   useReveal();
+
+  useEffect(() => initMotion(), []);
 
   useEffect(() => {
     const seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
