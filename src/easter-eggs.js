@@ -404,6 +404,7 @@
     };
 
     document.addEventListener('mousemove', (e) => {
+      if (!(e.target instanceof Element)) return;
       lastX = e.clientX; lastY = e.clientY;
       const hit = findHit(e.target);
       if (hit) {

@@ -87,14 +87,24 @@ section[data-section="hero"] {
 }
 .hero-line { display: block; overflow: hidden; }
 .hero-line-sub { color: var(--text-4); font-size: 0.42em; letter-spacing: -0.02em; font-weight: 500; line-height: 1.05; margin-top: 0.15em; }
-.hero-word { display: inline-block; transform: translateY(130%); }
+.hero-word { display: inline-block; }
 .hero-word-accent {
   background: linear-gradient(135deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
   font-style: italic;
 }
-.hero-word-ghost { display: inline-block; color: var(--text-4); font-weight: 500; transform: translateY(130%); }
+.hero-word-ghost { display: inline-block; color: var(--text-4); font-weight: 500; }
+
+/* Pre-paint hide for the title rise: scoped to .pre-intro (set by an
+   inline <script> in index.html, removed synchronously by the motion
+   layer once GSAP owns the words' transforms). Scoping — rather than an
+   unconditional hide — keeps title spans visible when they remount on a
+   theme toggle, and with JS disabled. */
+.pre-intro .hero-word,
+.pre-intro .hero-word-ghost,
+.pre-intro .hero-mag-title,
+.pre-intro .hero-mag-sub { transform: translateY(130%); }
 
 /* Light hero — editorial magazine */
 :root[data-theme='light'] .hero-title {
@@ -121,7 +131,6 @@ section[data-section="hero"] {
   letter-spacing: -0.055em !important;
   line-height: 0.88 !important;
   color: var(--text-0) !important;
-  transform: translateY(130%);
 }
 .hero-mag-sub {
   font-family: var(--font-body) !important;
@@ -131,7 +140,6 @@ section[data-section="hero"] {
   text-transform: uppercase;
   color: var(--text-3) !important;
   margin-top: 12px;
-  transform: translateY(130%);
 }
 
 .hero-sub { max-width: 560px; }

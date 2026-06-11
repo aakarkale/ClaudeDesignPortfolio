@@ -1,21 +1,19 @@
 // ====================================================================
 // Motion layer — GSAP + ScrollTrigger + Lenis choreography.
-// Libraries are loaded from CDN in index.html; everything here bails
-// gracefully when they're missing or reduced motion is requested, in
-// which case the existing .reveal IntersectionObserver system takes
-// over untouched.
+// Libraries are bundled (pinned npm versions — no runtime CDN), so the
+// page renders without waiting on third-party scripts. When reduced
+// motion is requested everything here bails and the existing .reveal
+// IntersectionObserver system takes over untouched.
 // ====================================================================
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
 
 export function initMotion() {
-  const gsap = window.gsap;
-  const ScrollTrigger = window.ScrollTrigger;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!gsap || !ScrollTrigger || reduced) {
-    // CSS pre-hides hero words; since GSAP won't animate them, restore visibility.
-    document.querySelectorAll('.hero-word, .hero-word-ghost, .hero-mag-title, .hero-mag-sub')
-      .forEach((el) => { el.style.transform = 'none'; });
-    document.querySelectorAll('.hero-line')
-      .forEach((el) => { el.style.overflow = 'visible'; });
+  if (reduced) {
+    // No animation will run — just lift the CSS pre-hide.
+    document.documentElement.classList.remove('pre-intro');
     return () => {};
   }
 
@@ -23,28 +21,25 @@ export function initMotion() {
   const killers = [];
 
   // ── Lenis smooth scroll, driven by the GSAP ticker ──────────────────
-  let lenis = null;
-  if (window.Lenis) {
-    // Lenis takes over easing; native smooth would double-ease anchors.
-    document.documentElement.style.scrollBehavior = 'auto';
-    lenis = new window.Lenis({ lerp: 0.12, smoothWheel: true });
-    lenis.on('scroll', ScrollTrigger.update);
-    const raf = (time) => lenis.raf(time * 1000);
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0);
-    killers.push(() => { gsap.ticker.remove(raf); lenis.destroy(); });
+  // Lenis takes over easing; native smooth would double-ease anchors.
+  document.documentElement.style.scrollBehavior = 'auto';
+  const lenis = new Lenis({ lerp: 0.2, smoothWheel: true });
+  lenis.on('scroll', ScrollTrigger.update);
+  const raf = (time) => lenis.raf(time * 1000);
+  gsap.ticker.add(raf);
+  gsap.ticker.lagSmoothing(0);
+  killers.push(() => { gsap.ticker.remove(raf); lenis.destroy(); });
 
-    const onClick = (e) => {
-      const a = e.target.closest('a[href^="#"]');
-      if (!a) return;
-      const target = document.querySelector(a.getAttribute('href'));
-      if (!target) return;
-      e.preventDefault();
-      lenis.scrollTo(target, { offset: -16, duration: 1.3, easing: (t) => 1 - Math.pow(1 - t, 4) });
-    };
-    document.addEventListener('click', onClick);
-    killers.push(() => document.removeEventListener('click', onClick));
-  }
+  const onClick = (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const target = document.querySelector(a.getAttribute('href'));
+    if (!target) return;
+    e.preventDefault();
+    lenis.scrollTo(target, { offset: -16, duration: 1.3, easing: (t) => 1 - Math.pow(1 - t, 4) });
+  };
+  document.addEventListener('click', onClick);
+  killers.push(() => document.removeEventListener('click', onClick));
 
   // Take an element away from the .reveal observer: mark it revealed and
   // kill the CSS transition so GSAP's inline styles are the only driver.
@@ -63,6 +58,15 @@ export function initMotion() {
   const words = gsap.utils.toArray(
     '.hero-title .hero-word, .hero-title .hero-word-ghost, .hero-title .hero-mag-title, .hero-title .hero-mag-sub'
   );
+  // Swap the .pre-intro CSS hide for an equivalent GSAP-owned yPercent.
+  // The class must go FIRST: gsap.set parses the element's computed
+  // transform as a px baseline, so reading it while the stylesheet's
+  // translateY(130%) applies would bake a permanent px offset under the
+  // yPercent tween. Both statements run in the same synchronous
+  // pre-paint block (useLayoutEffect), so nothing can flash between.
+  document.documentElement.classList.remove('pre-intro');
+  if (words.length) gsap.set(words, { yPercent: 130 });
+
   const heroDot = document.querySelector('#hero-dot');
   if (heroDot) gsap.set(heroDot, { scale: 0, display: 'inline-block', transformOrigin: '50% 70%' });
   gsap.set('.hero-meta',         { autoAlpha: 0, y: -16 });
