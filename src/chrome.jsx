@@ -322,7 +322,7 @@ function HeroBackdrop() {
       canvas.width = Math.round(W * DPR);
       canvas.height = Math.round(H * DPR);
 
-      const CELL = 14;
+      const CELL = 12;
       const nx = Math.ceil(W / CELL) + 1;
       const ny = Math.ceil(H / CELL) + 1;
       const grid = new Float32Array(nx * ny);
@@ -331,8 +331,8 @@ function HeroBackdrop() {
         for (let i = 0; i < nx; i++)
           grid[j * nx + i] = field((i * CELL) / span, (j * CELL) / span);
 
-      const LEVELS = 12;
-      const ACCENT_LEVEL = 6; // one contour ring drawn in the theme accent
+      const LEVELS = 15;
+      const ACCENT_LEVEL = 7; // one contour ring drawn in the theme accent
       const baseSegs = [], accentSegs = [];
       const lerp = (la, lb, va, vb, L) => la + ((L - va) / (vb - va)) * (lb - la);
 
@@ -382,7 +382,7 @@ function HeroBackdrop() {
 
     // Pointer state — eased; repel falls off as a gaussian
     const ptr = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
-    const RADIUS = 150, PUSH = 26;
+    const RADIUS = 180, PUSH = 48;
     const CUT = RADIUS * RADIUS * 5;
 
     const warp = (x, y) => {
