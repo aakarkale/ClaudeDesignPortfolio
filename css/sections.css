@@ -10,65 +10,22 @@ section[data-section="hero"] {
   overflow: hidden;
 }
 
-/* Ambient backdrop: soft accent wash + slow-spinning 8-point starburst.
-   Sits behind the hero copy; hero-wrap is given z-index above. */
+/* Topographic backdrop: contour lines drawn on a canvas, repelled by
+   the cursor. Sits behind the hero copy; hero-wrap is z-indexed above.
+   Edges fade out so contours don't end abruptly at the section bounds. */
 .hero-backdrop {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  --bd-glow-op:  0.85;
-  --bd-burst-op: 0.18;
+  -webkit-mask-image: radial-gradient(130% 130% at 50% 42%, black 55%, transparent 92%);
+  mask-image: radial-gradient(130% 130% at 50% 42%, black 55%, transparent 92%);
 }
-:root[data-theme='light'] .hero-backdrop {
-  --bd-glow-op:  0.55;
-  --bd-burst-op: 0.10;
-}
-
-.hero-backdrop-glow {
-  position: absolute;
-  left: 50%; top: 50%;
-  width: clamp(560px, 90vw, 1100px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(
-    circle,
-    color-mix(in oklab, var(--accent) 22%, transparent) 0%,
-    color-mix(in oklab, var(--accent) 8%,  transparent) 32%,
-    transparent 62%
-  );
-  opacity: var(--bd-glow-op);
-  animation: hero-glow-breathe 10s ease-in-out infinite;
-  filter: blur(2px);
-}
-
-.hero-burst {
-  position: absolute;
-  left: 50%; top: 50%;
-  width: clamp(380px, 64vw, 760px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  opacity: var(--bd-burst-op);
-  animation: hero-burst-spin 90s linear infinite;
-  mix-blend-mode: screen;
-}
-:root[data-theme='light'] .hero-burst {
-  mix-blend-mode: multiply;
-}
-.hero-burst-rays path {
-  fill: var(--accent);
-}
-
-@keyframes hero-glow-breathe {
-  0%, 100% { transform: translate(-50%, -50%) scale(1);    filter: blur(2px); }
-  50%      { transform: translate(-50%, -50%) scale(1.08); filter: blur(6px); }
-}
-@keyframes hero-burst-spin {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-backdrop-glow, .hero-burst { animation: none; }
+.hero-topo {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .hero-wrap {
