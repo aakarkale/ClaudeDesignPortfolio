@@ -437,7 +437,23 @@ function HeroBackdrop() {
       if (!running) { running = true; raf = requestAnimationFrame(step); }
     };
 
+    // Skip all pointer-driven redraw work while the hero is scrolled out
+    // of view — mousemove elsewhere on the page must not cost anything.
+    let visible = true;
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (!visible) {
+        ptr.x = ptr.tx = -9999; ptr.y = ptr.ty = -9999;
+        running = false;
+        cancelAnimationFrame(raf);
+      } else {
+        draw();
+      }
+    });
+    io.observe(host);
+
     const onMove = (e) => {
+      if (!visible) return;
       const r = host.getBoundingClientRect();
       ptr.tx = e.clientX - r.left;
       ptr.ty = e.clientY - r.top;
@@ -463,6 +479,7 @@ function HeroBackdrop() {
       cancelAnimationFrame(raf);
       window.removeEventListener('mousemove', onMove);
       document.documentElement.removeEventListener('mouseleave', onLeave);
+      io.disconnect();
       ro.disconnect();
       mo.disconnect();
     };

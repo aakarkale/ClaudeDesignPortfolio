@@ -2,21 +2,21 @@
    Kole Jain Design System — Colors + Type
    ===================================================================== */
 
-/* ---------- Brand Fonts (via Google Fonts CDN) --------------------------
-   Kole's brand ships 7 typefaces. DM Sans is the default workhorse.
-   Axiforma + SF Pro are commercial — substituted with nearest Google Font.
+/* ---------- Brand Fonts -----------------------------------------------
+   Loaded via <link> in index.html (preconnect + parallel fetch) — only
+   the four faces the site actually renders: DM Sans, Montserrat,
+   Unbounded, Geist. The other brand aliases below resolve to those or
+   to system stacks so no unused webfont is ever downloaded.
    ------------------------------------------------------------------ */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&family=Unbounded:wght@400;500;600;700;800;900&family=Geist:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
-
 :root {
-  /* ---------- Font families (7 brand faces) ---------- */
+  /* ---------- Font families ---------- */
   --font-dm-sans:     'DM Sans', system-ui, sans-serif;        /* default */
-  --font-jakarta:     'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-jakarta:     'DM Sans', system-ui, sans-serif;        /* SUB: Jakarta not shipped */
   --font-montserrat:  'Montserrat', system-ui, sans-serif;
   --font-unbounded:   'Unbounded', system-ui, sans-serif;      /* display */
   --font-geist:       'Geist', system-ui, sans-serif;          /* mono-ish */
-  --font-axiforma:    'Manrope', system-ui, sans-serif;        /* SUB: Axiforma not on Google Fonts */
-  --font-sf-pro:      'Inter', -apple-system, BlinkMacSystemFont, sans-serif; /* SUB: SF Pro is Apple-only */
+  --font-axiforma:    'DM Sans', system-ui, sans-serif;        /* SUB: Axiforma not shipped */
+  --font-sf-pro:      -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; /* SUB: SF Pro is Apple-only */
 
   /* ---------- Aliases by role ---------- */
   --font-body:     var(--font-dm-sans);
