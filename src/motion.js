@@ -56,29 +56,35 @@ export function initMotion() {
   const words = gsap.utils.toArray(
     '.hero-title .hero-word, .hero-title .hero-word-ghost, .hero-title .hero-mag-title, .hero-title .hero-mag-sub'
   );
+  // Stamp initial state synchronously (before any paint) so elements never
+  // flash at their rest position between own() and the timeline's first
+  // tick. We use gsap.set + .to instead of .from for this reason.
+  if (words.length) {
+    lines.forEach((l) => { l.style.overflow = 'hidden'; });
+    gsap.set(words, { display: 'inline-block', yPercent: 130 });
+  }
+  const heroDot = document.querySelector('#hero-dot');
+  if (heroDot) gsap.set(heroDot, { scale: 0, display: 'inline-block', transformOrigin: '50% 70%' });
+  gsap.set('.hero-meta',         { autoAlpha: 0, y: -16 });
+  gsap.set('.hero-sub',          { autoAlpha: 0, y: 22 });
+  gsap.set('.hero-actions .btn', { autoAlpha: 0, y: 14, scale: 0.94 });
+  gsap.set('.hero-scroll',       { autoAlpha: 0, y: -10 });
+
   const intro = gsap.timeline({
     defaults: { ease: 'power4.out' },
     onComplete: () => lines.forEach((l) => { l.style.overflow = ''; }),
   });
-  if (words.length) {
-    lines.forEach((l) => { l.style.overflow = 'hidden'; });
-    gsap.set(words, { display: 'inline-block' });
-    intro.from(words, { yPercent: 130, duration: 1.1, stagger: 0.09 }, 0.1);
-  }
-  const heroDot = document.querySelector('#hero-dot');
-  if (heroDot) {
-    intro.from(heroDot, {
-      scale: 0, display: 'inline-block', transformOrigin: '50% 70%',
-      ease: 'elastic.out(1, 0.45)', duration: 1.1,
-    }, 0.85);
-  }
+  if (words.length) intro.to(words, { yPercent: 0, duration: 0.85, stagger: 0.055 }, 0);
+  if (heroDot) intro.to(heroDot, {
+    scale: 1, ease: 'elastic.out(1, 0.45)', duration: 0.9,
+  }, 0.42);
   intro
-    .from('.hero-meta',  { y: -18, autoAlpha: 0, duration: 0.8 }, 0.45)
-    .from('.hero-sub',   { y: 26,  autoAlpha: 0, duration: 0.9 }, 0.6)
-    .from('.hero-actions .btn', {
-      y: 18, autoAlpha: 0, scale: 0.94, duration: 0.7, stagger: 0.1, ease: 'back.out(1.7)',
-    }, 0.75)
-    .from('.hero-scroll', { autoAlpha: 0, y: -12, duration: 0.6 }, 1.05);
+    .to('.hero-meta',  { autoAlpha: 1, y: 0, duration: 0.55 }, 0.18)
+    .to('.hero-sub',   { autoAlpha: 1, y: 0, duration: 0.65 }, 0.32)
+    .to('.hero-actions .btn', {
+      autoAlpha: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.07, ease: 'back.out(1.6)',
+    }, 0.46)
+    .to('.hero-scroll', { autoAlpha: 1, y: 0, duration: 0.45 }, 0.7);
   killers.push(() => intro.kill());
 
   // Hero (copy + backdrop) drifts up and fades as you scroll into About.

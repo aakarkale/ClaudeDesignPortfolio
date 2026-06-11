@@ -1,7 +1,7 @@
 // ====================================================================
 // Main entry — mounts the app
 // ====================================================================
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { AK_DATA } from './data.js';
@@ -20,7 +20,10 @@ function App() {
 
   useReveal();
 
-  useEffect(() => initMotion(), []);
+  // useLayoutEffect so GSAP stamps the hero entrance's initial state
+  // before the browser's first paint — avoids the rest-position flash
+  // that useEffect (post-paint) would let through.
+  useLayoutEffect(() => initMotion(), []);
 
   useEffect(() => {
     const seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
