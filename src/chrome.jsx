@@ -236,6 +236,7 @@ export function Hero({ theme, data }) {
 
   return (
     <section id="home" data-section="hero" data-screen-label="01 Hero">
+      <HeroBackdrop />
       <div className="hero-wrap">
         <div className="hero-meta reveal">
           <div className="eyebrow">Available for the right problem</div>
@@ -265,6 +266,27 @@ export function Hero({ theme, data }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function HeroBackdrop() {
+  // 8-pointed starburst evoking the Fable 5 set: two long primary rays
+  // (vertical + horizontal) and two shorter diagonals. Slow rotation +
+  // breathing glow live in CSS so the SVG itself stays static markup.
+  const longRay  = 'M 0 -100 Q 3 -40 5 0 Q 3 40 0 100 Q -3 40 -5 0 Q -3 -40 0 -100 Z';
+  const shortRay = 'M 0 -62 Q 2 -25 3 0 Q 2 25 0 62 Q -2 25 -3 0 Q -2 -25 0 -62 Z';
+  return (
+    <div className="hero-backdrop" aria-hidden="true">
+      <div className="hero-backdrop-glow" />
+      <svg className="hero-burst" viewBox="-110 -110 220 220" xmlns="http://www.w3.org/2000/svg">
+        <g className="hero-burst-rays">
+          <path d={longRay} />
+          <path d={longRay}  transform="rotate(90)" />
+          <path d={shortRay} transform="rotate(45)" />
+          <path d={shortRay} transform="rotate(135)" />
+        </g>
+      </svg>
+    </div>
   );
 }
 

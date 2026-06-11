@@ -81,12 +81,18 @@ export function initMotion() {
     .from('.hero-scroll', { autoAlpha: 0, y: -12, duration: 0.6 }, 1.05);
   killers.push(() => intro.kill());
 
-  // Hero drifts up and fades as you scroll into About.
+  // Hero (copy + backdrop) drifts up and fades as you scroll into About.
   const heroDrift = gsap.to('.hero-wrap', {
     yPercent: -10, opacity: 0.2, ease: 'none',
     scrollTrigger: { trigger: '#home', start: 'top top', end: 'bottom 30%', scrub: true },
   });
   killers.push(() => heroDrift.scrollTrigger && heroDrift.scrollTrigger.kill());
+
+  const backdropDrift = gsap.to('.hero-backdrop', {
+    yPercent: -8, opacity: 0, ease: 'none',
+    scrollTrigger: { trigger: '#home', start: 'top top', end: 'bottom 20%', scrub: true },
+  });
+  killers.push(() => backdropDrift.scrollTrigger && backdropDrift.scrollTrigger.kill());
 
   // ── Section heads slide in on scroll ─────────────────────────────────
   gsap.utils.toArray('.section-head').forEach((el) => {
