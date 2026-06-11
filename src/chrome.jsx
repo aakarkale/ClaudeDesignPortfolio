@@ -377,7 +377,8 @@ function HeroBackdrop() {
       const dark = document.documentElement.getAttribute('data-theme') !== 'light';
       baseColor = dark ? 'rgba(255,255,255,0.085)' : 'rgba(20,20,20,0.10)';
       const acc = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-      accentColor = acc || 'rgb(255,107,53)';
+      const m = acc.match(/rgb\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)\s*\)/i);
+      accentColor = m ? `rgba(${m[1]},${m[2]},${m[3]},0.42)` : 'rgba(255,107,53,0.42)';
     };
 
     // Pointer state — eased; repel falls off as a gaussian
@@ -410,7 +411,7 @@ function HeroBackdrop() {
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       ctx.clearRect(0, 0, W, H);
       drawBucket(base, baseColor, 1);
-      drawBucket(accent, accentColor, 1.4);
+      drawBucket(accent, accentColor, 1.1);
     };
 
     // rAF loop runs only while the pointer is settling; idle = static
