@@ -30,9 +30,10 @@ export const AK_DATA = {
       place: 'San Jose, CA',
       period: 'May 2023 — Present',
       bullets: [
-        'Led 0-to-1 development of AcquireCars (Patent Filed), an AI/ML-powered vehicle acquisition platform.',
-        'Improved acquisition conversion rate by 11% and reduced time-to-value by 58%.',
-        'Integrated an AI/ML pricing engine and architected scalable AWS infrastructure.',
+        'Shipped an LLM-powered voice agent and real-time call intelligence feature on Dialpad telephony in 3 months, enabling 50+ dealership call centers to auto-route CRM actions into Salesforce with zero human review.',
+        'Took AcquireCars (patent filed) from conception to production as the sole owning PM — defined an 18-month roadmap, authored PRDs, and shipped an AI/ML acquisition platform on AWS (Lambda, S3, Redshift), improving free-to-paid conversion +11% and cutting time-to-value 58% (12 → 5 days).',
+        'Drove customer feedback loops with 50–60 dealership users; fed live call transcripts and session data directly into sprint priorities and AI agent refinement.',
+        'Partnered with engineering, design, and data science on A/B experiments across onboarding and activation flows, lifting operational efficiency +30% and presenting quarterly AI/ML strategy to C-suite.',
       ],
     },
     {
@@ -41,9 +42,10 @@ export const AK_DATA = {
       place: 'San Francisco, CA',
       period: 'Feb 2021 — May 2023',
       bullets: [
-        'Managed a comprehensive Healthcare IoT platform achieving 99.95% uptime.',
-        'Spearheaded development of a B2B SaaS telemedicine solution.',
-        'Conducted 180+ usability sessions to drive product iteration and user-centric design.',
+        'Owned product strategy for a healthcare IoT B2B SaaS platform; shipped 6 releases/quarter across 16 pilot sites, lifted CSAT +30%, and maintained 99.95% telemetry uptime with ~450ms data-ingest latency.',
+        'Drove customer obsession for an AI-powered clinical decision support tool across 180+ usability sessions with 60+ clinicians, improving recommendation acceptance +17%, diagnostic turnaround -14%, and onboarding time -43%.',
+        'Led product for a B2B SaaS telemedicine platform — authored PRDs, wireframes, and API specs — driving appointment completion +12%, feature adoption +62%, and NPS +11 post-launch.',
+        'Delivered ML model performance reviews and product strategy to senior leadership and client executives across multiple fast-moving B2B environments simultaneously.',
       ],
     },
     {
@@ -52,8 +54,8 @@ export const AK_DATA = {
       place: 'Bellevue, WA',
       period: 'Jun 2019 — Aug 2019',
       bullets: [
-        'Built a 5G rollout dashboard utilized by 200+ representatives.',
-        'Reduced data processing time by 95%.',
+        'Built a real-time 5G rollout dashboard in Python, SQL, Azure, and Power BI adopted by 200+ Customer Care reps across 12 regions; cut time-to-coverage answer from 10 min to 30 sec (−95%) at 99.9% uptime.',
+        'Led post-launch network analytics using Python time-series forecasting (~7% MAPE) to predict peak demand; identified congestion hotspots driving ~40% of incident volume, reducing outages −19% and call-drop rate −14%.',
       ],
     },
     {
@@ -62,7 +64,9 @@ export const AK_DATA = {
       place: 'Mumbai, India',
       period: 'Jun 2017 — Jul 2018',
       bullets: [
-        'Unlocked $1.45M in funding opportunities for portfolio companies.',
+        'Forged C-suite relationships with 80+ startup CEOs, VCs, and enterprise buyers; ran executive QBRs tying roadmap to ROI, unlocking $1.45M in funding, pilots, and co-sell deals.',
+        'Built a closed-loop executive feedback engine, funneling signals into roadmap prioritization and lifting NPS by 12 pts across 75+ portfolio companies.',
+        'Systematized discovery across 500+ founders, turning patterns into PRDs and GTM plays for 5 new fintech offerings; cut time-to-launch ~35% and scaled the accelerator to 6× YoY revenue.',
       ],
     },
     {
@@ -71,8 +75,9 @@ export const AK_DATA = {
       place: 'Mumbai, India',
       period: 'Oct 2014 — Jan 2017',
       bullets: [
-        'Founded and led a B2C book marketplace with a 24-person team.',
-        'Scaled to 50k+ books sold and acquired 15k+ customers.',
+        'Founded and scaled a B2C book marketplace from 0 to 1 with a 24-person team built from scratch; reached break-even in 3 months and INR 900k revenue by Q4.',
+        'Sold 50k+ books to 15k+ customers, owning the full product, operations, and growth stack.',
+        'Used Google Analytics, CrazyEgg, and Marketo to analyze customer behavior and iterate on UX, accelerating user acquisition through data-driven content and conversion optimization.',
       ],
     },
   ],
