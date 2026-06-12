@@ -88,30 +88,103 @@ function loopWhileVisible(host, frame) {
 // Drive an ambient "virtual pointer" so coarse-pointer (mobile) devices
 // still see the hero experiences come alive — there's no cursor to track.
 // It calls onMove with a fake { clientX, clientY } in viewport coords, so
-// each mode reuses its existing pointer handler unchanged. Combines a slow
-// Lissajous wander (so things drift even at rest) with a small scroll
-// bleed (so the user feels in control when they swipe). Only runs while
-// the hero is on-screen; skipped entirely under reduced motion.
+// each mode reuses its existing pointer handler unchanged.
+//
+// Input priority each frame:
+//   1. Device gyroscope (deviceorientation events) — tilt the phone to
+//      steer the pointer. iOS gates this behind a permission request,
+//      which we trigger on the visitor's first touch (see ensureGyroPerm).
+//   2. Lissajous fallback — if no tilt data has arrived in the last 2s
+//      (no sensor, permission denied, desktop), wander autonomously so
+//      the experience never sits still.
+//
+// Either path bleeds a little scroll position into the pointer so a
+// swipe feels intentional. Only runs while the hero is on-screen; skipped
+// entirely under reduced motion.
+let gyroPermPromise = null;
+function ensureGyroPerm() {
+  // iOS 13+ requires a user gesture to request orientation permission.
+  // Called from a touchstart/click handler, this resolves once on first
+  // visit and is a no-op everywhere else (Android already grants by default).
+  if (gyroPermPromise) return gyroPermPromise;
+  const DOE = typeof DeviceOrientationEvent !== 'undefined' ? DeviceOrientationEvent : null;
+  if (!DOE || typeof DOE.requestPermission !== 'function') {
+    gyroPermPromise = Promise.resolve('granted');
+    return gyroPermPromise;
+  }
+  gyroPermPromise = DOE.requestPermission().catch(() => 'denied');
+  return gyroPermPromise;
+}
+
 function ambientDriver(host, onMove) {
   if (prefersReduced()) return () => {};
   const t0 = performance.now();
-  return loopWhileVisible(host, (now) => {
+
+  // Latest tilt sample and when it arrived. Stays null until the device
+  // (or the user, on iOS) actually delivers an orientation event.
+  let tilt = null;        // { gamma: -90..90, beta: -180..180 }
+  let tiltAt = 0;
+  const onOrient = (e) => {
+    if (e.gamma == null && e.beta == null) return;
+    tilt = { gamma: e.gamma || 0, beta: e.beta || 0 };
+    tiltAt = performance.now();
+  };
+  window.addEventListener('deviceorientation', onOrient, { passive: true });
+
+  // iOS: ask once on the visitor's first gesture. We don't gate the
+  // ambient loop on the result — Lissajous keeps running until tilt
+  // events actually start arriving, which only happens if permission
+  // was granted and the device has the sensor.
+  const onFirstGesture = () => { ensureGyroPerm(); };
+  window.addEventListener('touchstart', onFirstGesture, { once: true, passive: true });
+  window.addEventListener('click', onFirstGesture, { once: true, passive: true });
+
+  // Smoothed normalized pointer position (0..1 within the hero rect).
+  let cx = 0.5, cy = 0.40;
+
+  const stopLoop = loopWhileVisible(host, (now) => {
     const r = host.getBoundingClientRect();
     if (r.bottom <= 0 || r.top >= window.innerHeight) return;
-    const t = (now - t0) / 1000;
-    // Lissajous wander — fast enough to read as motion at a glance,
-    // biased toward the upper half of the hero where the title lives.
-    const u = 0.5 + Math.sin(t * 0.78) * 0.38;
-    const v = 0.40 + Math.cos(t * 0.55) * 0.30;
+
+    let tx, ty;
+    if (tilt && now - tiltAt < 2000) {
+      // Gyro-driven. ±30° of gamma / beta around a 35° resting beta maps
+      // to the same 0.12–0.88 / 0.10–0.72 spread as the Lissajous so the
+      // pointer stays within the hero even at extreme tilts.
+      const CAP = 30;
+      const gx = Math.max(-1, Math.min(1, tilt.gamma / CAP));
+      const by = Math.max(-1, Math.min(1, (tilt.beta - 35) / CAP));
+      tx = 0.5 + gx * 0.38;
+      ty = 0.40 + by * 0.30;
+    } else {
+      // Autonomous Lissajous fallback.
+      const t = (now - t0) / 1000;
+      tx = 0.5 + Math.sin(t * 0.78) * 0.38;
+      ty = 0.40 + Math.cos(t * 0.55) * 0.30;
+    }
+
+    // Critically-damped smoothing — kills sensor jitter and softens the
+    // gyro→Lissajous handoff if events stop arriving mid-wander.
+    cx += (tx - cx) * 0.14;
+    cy += (ty - cy) * 0.14;
+
     // Each viewport scrolled past the hero nudges the pointer; capped
     // so a fast flick can't fling the pointer off the field.
     const sBleed = Math.max(-0.18, Math.min(0.18,
       (window.scrollY / Math.max(1, r.height)) * 0.22));
+
     onMove({
-      clientX: r.left + u * r.width,
-      clientY: r.top + (v + sBleed) * r.height,
+      clientX: r.left + cx * r.width,
+      clientY: r.top + (cy + sBleed) * r.height,
     });
   });
+
+  return () => {
+    window.removeEventListener('deviceorientation', onOrient);
+    window.removeEventListener('touchstart', onFirstGesture);
+    window.removeEventListener('click', onFirstGesture);
+    stopLoop();
+  };
 }
 
 // ── Mode 1: TOPO (the original) ───────────────────────────────────────
