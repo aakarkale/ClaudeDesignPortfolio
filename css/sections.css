@@ -77,10 +77,11 @@ section[data-section="hero"] {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+/* Subtle by design — no glow halo (that's reserved for the actionable
+   motion-hint dot); just a gentle opacity pulse. */
 .live-dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 12px var(--accent);
   animation: pulse 1.8s ease-in-out infinite;
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
