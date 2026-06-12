@@ -92,8 +92,9 @@ function loopWhileVisible(host, frame) {
 //
 // Input priority each frame:
 //   1. Device gyroscope (deviceorientation events) — tilt the phone to
-//      steer the pointer. iOS gates this behind a permission request,
-//      which we trigger on the visitor's first touch (see ensureGyroPerm).
+//      steer the pointer. iOS gates this behind a permission request
+//      that must come from an explicit user click on a real interactive
+//      element; see GyroPrompt in chrome.jsx. Android grants by default.
 //   2. Lissajous fallback — if no tilt data has arrived in the last 2s
 //      (no sensor, permission denied, desktop), wander autonomously so
 //      the experience never sits still.
@@ -101,27 +102,14 @@ function loopWhileVisible(host, frame) {
 // Either path bleeds a little scroll position into the pointer so a
 // swipe feels intentional. Only runs while the hero is on-screen; skipped
 // entirely under reduced motion.
-let gyroPermPromise = null;
-function ensureGyroPerm() {
-  // iOS 13+ requires a user gesture to request orientation permission.
-  // Called from a touchstart/click handler, this resolves once on first
-  // visit and is a no-op everywhere else (Android already grants by default).
-  if (gyroPermPromise) return gyroPermPromise;
-  const DOE = typeof DeviceOrientationEvent !== 'undefined' ? DeviceOrientationEvent : null;
-  if (!DOE || typeof DOE.requestPermission !== 'function') {
-    gyroPermPromise = Promise.resolve('granted');
-    return gyroPermPromise;
-  }
-  gyroPermPromise = DOE.requestPermission().catch(() => 'denied');
-  return gyroPermPromise;
-}
 
 function ambientDriver(host, onMove) {
   if (prefersReduced()) return () => {};
   const t0 = performance.now();
 
   // Latest tilt sample and when it arrived. Stays null until the device
-  // (or the user, on iOS) actually delivers an orientation event.
+  // (on Android) or the user-granted permission flow (iOS) starts
+  // delivering orientation events.
   let tilt = null;        // { gamma: -90..90, beta: -180..180 }
   let tiltAt = 0;
   const onOrient = (e) => {
@@ -130,14 +118,6 @@ function ambientDriver(host, onMove) {
     tiltAt = performance.now();
   };
   window.addEventListener('deviceorientation', onOrient, { passive: true });
-
-  // iOS: ask once on the visitor's first gesture. We don't gate the
-  // ambient loop on the result — Lissajous keeps running until tilt
-  // events actually start arriving, which only happens if permission
-  // was granted and the device has the sensor.
-  const onFirstGesture = () => { ensureGyroPerm(); };
-  window.addEventListener('touchstart', onFirstGesture, { once: true, passive: true });
-  window.addEventListener('click', onFirstGesture, { once: true, passive: true });
 
   // Smoothed normalized pointer position (0..1 within the hero rect).
   let cx = 0.5, cy = 0.40;
@@ -181,8 +161,6 @@ function ambientDriver(host, onMove) {
 
   return () => {
     window.removeEventListener('deviceorientation', onOrient);
-    window.removeEventListener('touchstart', onFirstGesture);
-    window.removeEventListener('click', onFirstGesture);
     stopLoop();
   };
 }

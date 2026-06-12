@@ -151,6 +151,48 @@ export function CustomCursor({ theme }) {
   );
 }
 
+// ─── Motion hint (iOS only) ─────────────────────────────────────────
+// iOS Safari only honours DeviceOrientationEvent.requestPermission() when
+// it's called synchronously from a click on an actual interactive element
+// — a document-level "first tap anywhere" listener is unreliable. This
+// small mono-caps line in the hero meta strip is that explicit element;
+// it sits in the same visual register as the SF time indicator. Once
+// granted/denied it briefly confirms then dismisses for the session.
+export function GyroPrompt() {
+  const [state, setState] = useState('init');
+  useEffect(() => {
+    if (state !== 'init') return;
+    const DOE = typeof DeviceOrientationEvent !== 'undefined' ? DeviceOrientationEvent : null;
+    if (!DOE || typeof DOE.requestPermission !== 'function') return;
+    if (window.matchMedia('(pointer: fine)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (sessionStorage.getItem('ak_motion_asked') === '1') return;
+    const t = setTimeout(() => setState('ask'), 1500);
+    return () => clearTimeout(t);
+  }, [state]);
+
+  const onTap = async () => {
+    // requestPermission must be invoked from inside this click handler
+    // for iOS to treat it as user-activated.
+    let result = 'denied';
+    try { result = await DeviceOrientationEvent.requestPermission(); } catch (e) {}
+    try { sessionStorage.setItem('ak_motion_asked', '1'); } catch (e) {}
+    setState(result === 'granted' ? 'granted' : 'denied');
+    setTimeout(() => setState('hidden'), result === 'granted' ? 1400 : 1800);
+  };
+
+  if (state === 'init' || state === 'hidden') return null;
+  const label = state === 'granted' ? 'motion on'
+    : state === 'denied'             ? 'motion off'
+    :                                  'tilt · tap';
+  return (
+    <button className={`motion-hint on-${state}`} onClick={onTap} aria-label={label}>
+      <span className="motion-hint-dot" aria-hidden="true" />
+      {label}
+    </button>
+  );
+}
+
 // ─── Topbar ──────────────────────────────────────────────────────────
 export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChange }) {
   const pressTimer = useRef(null);
@@ -249,8 +291,11 @@ export function Hero({ theme, data, heroMode }) {
       <div className="hero-wrap">
         <div className="hero-meta reveal">
           <div className="eyebrow">Available for the right problem</div>
-          <div className="hero-time">
-            <span className="live-dot" /> SF · {sfTime}
+          <div className="hero-meta-right">
+            <div className="hero-time">
+              <span className="live-dot" /> SF · {sfTime}
+            </div>
+            <GyroPrompt />
           </div>
         </div>
 
