@@ -574,7 +574,7 @@ function initDots(host, canvas, ctx) {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
     const dark = isDark();
-    const baseA = dark ? 0.42 : 0.46;
+    const baseA = dark ? 0.32 : 0.36;
     for (let i = 0; i < dots.length; i++) {
       const d = dots[i];
       const dx = d.x - ptr.x, dy = d.y - ptr.y, dd = Math.hypot(dx, dy);
