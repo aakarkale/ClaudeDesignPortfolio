@@ -365,7 +365,7 @@ section[data-section="hero"] {
   padding: 12px 14px;
   border-radius: 12px;
   width: max-content;
-  max-width: 280px;
+  max-width: min(280px, calc(100vw - 40px));
   font: 500 12px/1.5 var(--font-mono);
   letter-spacing: 0.01em;
   text-transform: none;
@@ -373,6 +373,14 @@ section[data-section="hero"] {
 }
 .stat-tooltip--L  .stat-tooltip-card { left: 52px; }
 .stat-tooltip--rL .stat-tooltip-card { right: 52px; }
+
+/* These stat tooltips are a hover affordance — on touch devices there's
+   no hover to reveal them, and their fixed-width absolute box would push
+   the page wider than the screen. Remove them on touch entirely (the
+   global overflow-x: clip is the backstop). */
+@media (hover: none), (pointer: coarse) {
+  .stat-tooltip { display: none; }
+}
 
 :root[data-theme='light'] .stat-tooltip-card {
   background: var(--surface-0);
