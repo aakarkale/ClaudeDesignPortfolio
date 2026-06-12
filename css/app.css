@@ -6,13 +6,20 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+/* overflow-x: clip on BOTH html and body is the robust guard against any
+   stray element (e.g. an absolutely-positioned tooltip) widening the page
+   and expanding the mobile layout viewport — which would otherwise shrink
+   everything and cut the hero backdrop off mid-screen. `clip` (not
+   `hidden`) clips without creating a scroll container, so it never
+   interferes with sticky/fixed positioning or Lenis smooth scroll. */
+html { scroll-behavior: smooth; overflow-x: clip; }
 body {
   min-height: 100vh;
   font-family: 'DM Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 /* ============================================================
