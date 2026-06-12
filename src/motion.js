@@ -14,6 +14,8 @@ export function initMotion() {
   if (reduced) {
     // No animation will run — just lift the CSS pre-hide.
     document.documentElement.classList.remove('pre-intro');
+    // Tell the magnetic hero mode the title is settled (it never animates).
+    document.documentElement.dataset.heroIntro = 'done';
     return () => {};
   }
 
@@ -76,7 +78,11 @@ export function initMotion() {
 
   const intro = gsap.timeline({
     defaults: { ease: 'power4.out' },
-    onComplete: () => lines.forEach((l) => { l.style.overflow = 'visible'; }),
+    onComplete: () => {
+      lines.forEach((l) => { l.style.overflow = 'visible'; });
+      // Title is settled — magnetic hero mode may now split it into letters.
+      document.documentElement.dataset.heroIntro = 'done';
+    },
   });
   if (words.length) intro.to(words, { yPercent: 0, duration: 1.1, stagger: 0.09 }, 0);
   if (heroDot) intro.to(heroDot, {
