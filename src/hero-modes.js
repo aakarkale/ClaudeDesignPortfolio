@@ -453,6 +453,14 @@ function initSpotlight(host, canvas, ctx) {
     glow = rgbOf('--accent', [255, 221, 85]);
   };
 
+  // Mobile turns the light up very slightly — with the pointer wandering
+  // on its own (no cursor), a touch more reach + glow makes it clearer
+  // that something is alive. Desktop values unchanged.
+  const GLOW_A   = fine ? 0.17 : 0.21;  // gradient centre alpha
+  const GLOW_MID = fine ? 0.05 : 0.065; // gradient mid-stop alpha
+  const DOT_A    = fine ? 0.40 : 0.48;  // revealed dot opacity
+  const RAD      = fine ? 0.46 : 0.50;  // light radius (× min(W,H))
+
   const draw = (now) => {
     ptr.x += (ptr.tx - ptr.x) * 0.12;
     ptr.y += (ptr.ty - ptr.y) * 0.12;
@@ -460,12 +468,12 @@ function initSpotlight(host, canvas, ctx) {
     ctx.clearRect(0, 0, W, H);
     const t = now / 1000;
     const breathe = 1 + Math.sin(t * 1.1) * 0.06;
-    const R = Math.min(W, H) * 0.46 * breathe;
+    const R = Math.min(W, H) * RAD * breathe;
     const cx = ptr.x, cy = ptr.y;
     const [r, g, b] = glow;
     const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
-    grad.addColorStop(0, `rgba(${r},${g},${b},0.17)`);
-    grad.addColorStop(0.5, `rgba(${r},${g},${b},0.05)`);
+    grad.addColorStop(0, `rgba(${r},${g},${b},${GLOW_A})`);
+    grad.addColorStop(0.5, `rgba(${r},${g},${b},${GLOW_MID})`);
     grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
@@ -479,7 +487,7 @@ function initSpotlight(host, canvas, ctx) {
         const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy);
         if (d > R) continue;
         const f = 1 - d / R;
-        ctx.globalAlpha = f * 0.4;
+        ctx.globalAlpha = f * DOT_A;
         const s = 0.6 + f * 1.6;
         ctx.fillStyle = `rgba(${dotColor},1)`;
         ctx.fillRect(x - s / 2, y - s / 2, s, s);
@@ -574,7 +582,9 @@ function initDots(host, canvas, ctx) {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
     const dark = isDark();
-    const baseA = dark ? 0.32 : 0.36;
+    // Mobile eased back very slightly vs desktop (no cursor to draw the
+    // eye, so a calmer resting grid reads better).
+    const baseA = fine ? (dark ? 0.32 : 0.36) : (dark ? 0.28 : 0.32);
     for (let i = 0; i < dots.length; i++) {
       const d = dots[i];
       const dx = d.x - ptr.x, dy = d.y - ptr.y, dd = Math.hypot(dx, dy);
