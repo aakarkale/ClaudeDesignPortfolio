@@ -1,7 +1,7 @@
 // ====================================================================
 // Hero FX — four swappable backdrop "experiences" for the hero section.
-// The user cycles them with a long-press on the AK. logo; the choice is
-// persisted (see main.jsx). Each mode is a self-contained initializer
+// The site advances to the next one on every page load (position kept in
+// localStorage — see main.jsx). Each mode is a self-contained initializer
 // that owns its own canvas drawing, listeners, observers and rAF loop,
 // and returns a single cleanup function. createHeroFX() is the small
 // controller that swaps between them.
@@ -17,7 +17,7 @@
 // when present, falls back to inline transforms otherwise).
 // ====================================================================
 
-// Long-press cycle order: dots → topo → spotlight → magnetic → (repeat).
+// Per-refresh cycle order: dots → topo → spotlight → magnetic → (repeat).
 export const HERO_MODES = ['dots', 'topo', 'spotlight', 'magnetic'];
 export const HERO_LABELS = {
   topo: 'Topographic',

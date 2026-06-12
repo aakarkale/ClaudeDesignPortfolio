@@ -205,7 +205,7 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChang
         onMouseLeave={handleLogoLeave}
         onMouseDown={startPress} onMouseUp={cancelPress}
         onTouchStart={startPress} onTouchEnd={cancelPress} onTouchCancel={cancelPress}
-        aria-label="Long-press to change hero style"
+        aria-label="AK logo"
       >
         <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
           {theme === 'dark' ? 'AK.' : 'AK.'}
