@@ -582,9 +582,13 @@ function initDots(host, canvas, ctx) {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
     const dark = isDark();
-    // Mobile eased back very slightly vs desktop (no cursor to draw the
-    // eye, so a calmer resting grid reads better).
-    const baseA = fine ? (dark ? 0.32 : 0.36) : (dark ? 0.22 : 0.26);
+    // Mobile is calmer all-round than desktop: resting grid, accent
+    // boost near the pointer, and the size bump it gives are all
+    // dialled back so the effect is felt rather than displayed.
+    const baseA = fine ? (dark ? 0.32 : 0.36) : (dark ? 0.18 : 0.21);
+    const NEAR_A = fine ? 0.55 : 0.35; // accent-alpha boost near pointer
+    const NEAR_S = fine ? 2.6  : 1.7;  // accent-size bump near pointer
+    const ACC_W  = fine ? 1.0  : 0.65; // how much the accent colour wins
     for (let i = 0; i < dots.length; i++) {
       const d = dots[i];
       const dx = d.x - ptr.x, dy = d.y - ptr.y, dd = Math.hypot(dx, dy);
@@ -600,11 +604,12 @@ function initDots(host, canvas, ctx) {
       // Dots near the pointer tint toward the theme accent and grow —
       // the disturbance reads as a clear warm glow moving through the
       // grid rather than a subtle shimmer.
-      const r = base[0] + (acc[0] - base[0]) * near;
-      const g = base[1] + (acc[1] - base[1]) * near;
-      const b = base[2] + (acc[2] - base[2]) * near;
-      const a = baseA + near * 0.55;
-      const s = 2.3 + near * 2.6;
+      const tint = near * ACC_W;
+      const r = base[0] + (acc[0] - base[0]) * tint;
+      const g = base[1] + (acc[1] - base[1]) * tint;
+      const b = base[2] + (acc[2] - base[2]) * tint;
+      const a = baseA + near * NEAR_A;
+      const s = 2.3 + near * NEAR_S;
       ctx.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${a})`;
       ctx.fillRect(d.x - s / 2, d.y - s / 2, s, s);
     }
