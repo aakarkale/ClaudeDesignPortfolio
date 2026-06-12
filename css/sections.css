@@ -77,14 +77,16 @@ section[data-section="hero"] {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-/* Subtle by design — no glow halo (that's reserved for the actionable
-   motion-hint dot); just a gentle opacity pulse. */
+/* Subtle by design — small, desaturated (accent blended with text-3 so
+   it reads as warm rather than glowing), with a narrow opacity pulse
+   that breathes gently rather than winking. The glow halo is reserved
+   for the actionable motion-hint dot. */
 .live-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--accent);
-  animation: pulse 1.8s ease-in-out infinite;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: color-mix(in oklab, var(--accent) 50%, var(--text-3));
+  animation: pulse 2.4s ease-in-out infinite;
 }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes pulse { 0%,100%{opacity:0.85} 50%{opacity:0.55} }
 
 /* Dark hero title */
 .hero-title {
