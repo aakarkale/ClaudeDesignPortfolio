@@ -181,7 +181,7 @@ export function Work({ data, projects, unlocked }) {
         <SectionHead index="02" title="Selected Work" sub="Things I've shipped, prototyped, and patent-filed." />
 
         {isMobile ? (
-          <SwipeDeck projects={projects} unlocked={unlocked} />
+          <WorkCarousel projects={projects} />
         ) : (
           <WorkGrid projects={projects} unlocked={unlocked} />
         )}
@@ -203,84 +203,171 @@ export function useMediaQuery(query) {
   return matches;
 }
 
-function SwipeDeck({ projects, unlocked }) {
-  const [idx, setIdx] = useState(0);
-  const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
-  const startRef = useRef({ x: 0, y: 0 });
+// Mobile work carousel — horizontal scroll-snap deck, App Store style.
+// Native momentum scrolling does the physics; a scroll-driven rAF adds
+// the immersion: the centred card inflates while neighbours shrink,
+// tilt away (coverflow-lite) and dim, card content parallaxes against
+// the scroll, and each project's accent colour glows behind the deck,
+// cross-fading as you browse. A haptic detent ticks on every snap
+// (Android — iOS Safari has no vibration API), the progress bar is a
+// live scrubber you can drag, and fast flicks stop at every card
+// (scroll-snap-stop) so the detents land one by one.
+function WorkCarousel({ projects }) {
+  const trackRef = useRef(null);
+  const glowsRef = useRef(null);
+  const fillRef = useRef(null);
+  const scrubRef = useRef(null);
+  const activeRef = useRef(0);
+  const [active, setActive] = useState(0);
+  const n = projects.length;
 
-  const list = projects;
-  const n = list.length;
-  const cur = list[idx % n];
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canBuzz = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function' && !reduced;
+    let raf = 0, scheduled = false;
 
-  const next = (dir) => {
-    setIdx(i => (i + 1) % n);
-    setDrag({ x: 0, y: 0, active: false, flung: dir });
-    setTimeout(() => setDrag({ x: 0, y: 0, active: false }), 360);
+    const frame = () => {
+      scheduled = false;
+      const items = track.children;
+      if (!items.length) return;
+      const tr = track.getBoundingClientRect();
+      const mid = tr.left + tr.width / 2;
+      const glows = glowsRef.current ? glowsRef.current.children : [];
+      let best = 0, bestD = Infinity;
+
+      for (let i = 0; i < items.length; i++) {
+        const r = items[i].getBoundingClientRect();
+        const d = (r.left + r.width / 2 - mid) / Math.max(1, r.width); // signed, card-widths from centre
+        const ad = Math.min(1, Math.abs(d));
+        if (Math.abs(d) < bestD) { bestD = Math.abs(d); best = i; }
+        if (!reduced) {
+          const card = items[i].firstElementChild;
+          if (card) {
+            card.style.transform =
+              `perspective(900px) rotateY(${(-d * 9).toFixed(2)}deg) scale(${(1 - ad * 0.09).toFixed(3)})`;
+            card.style.opacity = (1 - ad * 0.45).toFixed(3);
+            const face = card.querySelector('.proj-face');
+            if (face) face.style.transform = `translateX(${(d * 14).toFixed(1)}px)`;
+          }
+          if (glows[i]) glows[i].style.opacity = ((1 - ad) * 0.5).toFixed(3);
+        }
+      }
+
+      // Continuous scrubber fill (no React state — runs every frame)
+      if (fillRef.current) {
+        const range = track.scrollWidth - track.clientWidth;
+        const p = range > 0 ? track.scrollLeft / range : 0;
+        fillRef.current.style.width = `${(p * 100).toFixed(2)}%`;
+      }
+
+      // Haptic detent + counter on snap-target change
+      if (best !== activeRef.current) {
+        activeRef.current = best;
+        setActive(best);
+        if (canBuzz) { try { navigator.vibrate(8); } catch (e) {} }
+      }
+    };
+
+    const onScroll = () => { if (!scheduled) { scheduled = true; raf = requestAnimationFrame(frame); } };
+    track.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    frame();
+    return () => {
+      track.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [n]);
+
+  // Scrubber: drag anywhere on the bar to fly through the deck. Snap is
+  // suspended during the drag (it would fight direct scrollLeft writes)
+  // and restored on release, when the browser re-snaps to the nearest
+  // card. The detent haptics fire from the scroll handler as indices fly
+  // past — dragging fast feels like running a thumb over a comb.
+  const onScrubDown = (e) => {
+    const el = scrubRef.current, track = trackRef.current;
+    if (!el || !track) return;
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+    track.style.scrollSnapType = 'none';
+    const seek = (ev) => {
+      const r = el.getBoundingClientRect();
+      const p = Math.max(0, Math.min(1, (ev.clientX - r.left) / Math.max(1, r.width)));
+      track.scrollLeft = p * (track.scrollWidth - track.clientWidth);
+    };
+    seek(e);
+    const move = (ev) => seek(ev);
+    const up = () => {
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', up);
+      el.removeEventListener('pointercancel', up);
+      track.style.scrollSnapType = '';
+      // settle onto the nearest card
+      const item = track.children[activeRef.current];
+      if (item) item.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    };
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
   };
 
-  const onStart = (e) => {
-    const p = e.touches ? e.touches[0] : e;
-    startRef.current = { x: p.clientX, y: p.clientY };
-    setDrag(d => ({ ...d, active: true }));
-  };
-  const onMove = (e) => {
-    if (!drag.active) return;
-    const p = e.touches ? e.touches[0] : e;
-    setDrag({ x: p.clientX - startRef.current.x, y: p.clientY - startRef.current.y, active: true });
-  };
-  const onEnd = () => {
-    if (Math.abs(drag.x) > 90) next(drag.x > 0 ? 1 : -1);
-    else setDrag({ x: 0, y: 0, active: false });
+  const go = (dir) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const i = Math.max(0, Math.min(n - 1, activeRef.current + dir));
+    const item = track.children[i];
+    if (item) item.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   };
 
   return (
-    <div className="swipe-stage reveal">
-      <div className="swipe-deck">
-        {[2, 1].map(off => (
-          <div key={`back-${off}`} className="swipe-card swipe-card-back"
-               style={{
-                 transform: `translateY(${off * 10}px) scale(${1 - off * 0.05})`,
-                 opacity: 1 - off * 0.3,
-                 zIndex: 10 - off,
-               }}
-               aria-hidden="true"
-          />
-        ))}
-
-        <div
-          className={`swipe-card swipe-card-top ${drag.flung ? 'swipe-flung' : ''}`}
-          style={{
-            transform: drag.flung
-              ? `translate(${drag.flung * 500}px, 60px) rotate(${drag.flung * 25}deg)`
-              : `translate(${drag.x}px, ${drag.y * 0.4}px) rotate(${drag.x * 0.05}deg)`,
-            transition: drag.active ? 'none' : 'transform 380ms cubic-bezier(.2,.8,.2,1)',
-            zIndex: 20,
-          }}
-          onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}
-          onMouseDown={onStart} onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={drag.active ? onEnd : undefined}
-        >
-          <ProjectCardFace p={cur} />
-          <div className="swipe-badge swipe-badge-right" style={{ opacity: Math.max(0, drag.x / 120) }}>NEXT</div>
-          <div className="swipe-badge swipe-badge-left"  style={{ opacity: Math.max(0, -drag.x / 120) }}>SKIP</div>
-        </div>
-      </div>
-
-      <div className="swipe-meta">
-        <div className="swipe-counter">
-          {String((idx % n) + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}
-        </div>
-        <div className="swipe-hint">← swipe to browse →</div>
-      </div>
-
-      <div className="swipe-dots">
-        {list.map((_, i) => (
-          <span key={i} className={`swipe-dot ${i === idx % n ? 'on' : ''}`} />
+    <div className="wc-stage reveal">
+      <div className="wc-glows" ref={glowsRef} aria-hidden="true">
+        {projects.map((p) => (
+          <div key={p.id} className="wc-glow"
+               style={{ background: `radial-gradient(closest-side, ${p.accent}, transparent 72%)` }} />
         ))}
       </div>
 
-      <div className="swipe-controls">
-        <button className="swipe-btn" onClick={() => setIdx(i => (i - 1 + n) % n)} aria-label="Previous">←</button>
-        <button className="swipe-btn" onClick={() => next(1)} aria-label="Next">→</button>
+      <div className="wc-track" ref={trackRef}>
+        {projects.map((p, i) => (
+          <div className="wc-item" key={p.id} style={{ '--i': i }}>
+            <a
+              className={`wc-card ${p.id === 'secret' ? 'proj-secret' : ''}`}
+              href={p.url || '#'}
+              target={p.url ? '_blank' : undefined}
+              rel={p.url ? 'noreferrer' : undefined}
+              style={{ '--accent': p.accent }}
+              draggable="false"
+            >
+              <ProjectCardFace p={p} />
+            </a>
+          </div>
+        ))}
+      </div>
+
+      <div className="wc-meta">
+        <div className="wc-counter">
+          {String(active + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}
+        </div>
+        <div className="wc-hint">swipe · scrub to browse</div>
+      </div>
+
+      <div className="wc-scrub" ref={scrubRef} onPointerDown={onScrubDown}
+           role="slider" aria-label="Browse projects"
+           aria-valuemin={1} aria-valuemax={n} aria-valuenow={active + 1}>
+        <div className="wc-scrub-line">
+          <div className="wc-scrub-fill" ref={fillRef} />
+        </div>
+        {projects.map((_, i) => (
+          <span key={i} className={`wc-tick ${i <= active ? 'on' : ''}`} />
+        ))}
+      </div>
+
+      <div className="wc-controls">
+        <button className="wc-btn" onClick={() => go(-1)} aria-label="Previous project">←</button>
+        <button className="wc-btn" onClick={() => go(1)} aria-label="Next project">→</button>
       </div>
     </div>
   );

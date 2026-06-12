@@ -21,7 +21,7 @@ function useClickHaptics() {
     if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (window.matchMedia('(pointer: fine)').matches) return;
-    const SEL = 'button, a, .btn, .chip, .proj-card, .swipe-card, [data-cursor="on"]';
+    const SEL = 'button, a, .btn, .chip, .proj-card, .wc-card, [data-cursor="on"]';
     const onTap = (e) => {
       const t = e.target;
       if (!(t instanceof Element)) return;

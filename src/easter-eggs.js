@@ -348,7 +348,7 @@
     const msgs=['🔧 Built with late nights and cold coffee.','💡 This idea came from a shower thought.','🚀 Shipped in a weekend hackathon.','🐛 This one had 47 bugs before launch.','❤️ My personal favorite project.'];
     let pressTimer, pressIdx=0;
     document.addEventListener('touchstart', e=>{
-      const card=e.target.closest('.proj-card,.swipe-card-top'); if (!card) return;
+      const card=e.target.closest('.proj-card,.wc-card'); if (!card) return;
       pressTimer=setTimeout(()=>{ const theme=getTheme(); confettiBurst(e.touches[0].clientX,e.touches[0].clientY,30); showToast(msgs[pressIdx++%msgs.length],{duration:3000,bg:theme==='dark'?'#1f1f1f':'#fff',color:theme==='dark'?'#fff':'#000'}); },600);
     },{passive:true});
     ['touchend','touchcancel','touchmove'].forEach(ev=>document.addEventListener(ev,()=>clearTimeout(pressTimer),{passive:true}));

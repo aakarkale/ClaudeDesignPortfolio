@@ -130,7 +130,7 @@ export function CustomCursor({ theme }) {
     window.addEventListener('mousemove', onMove);
 
     const onOver = (e) => {
-      const link = e.target.closest('a, button, .logo-btn, .theme-toggle, .proj-card, .swipe-card, .chip, [data-cursor="on"]');
+      const link = e.target.closest('a, button, .logo-btn, .theme-toggle, .proj-card, .wc-card, .chip, [data-cursor="on"]');
       if (ringRef.current) ringRef.current.classList.toggle('on-link', !!link);
     };
     document.addEventListener('mouseover', onOver);
