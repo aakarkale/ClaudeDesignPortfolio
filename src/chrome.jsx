@@ -178,7 +178,12 @@ export function GyroPrompt() {
     try { result = await DeviceOrientationEvent.requestPermission(); } catch (e) {}
     try { sessionStorage.setItem('ak_motion_asked', '1'); } catch (e) {}
     setState(result === 'granted' ? 'granted' : 'denied');
-    setTimeout(() => setState('hidden'), result === 'granted' ? 1400 : 1800);
+    // Keep "motion on" visible as a status indicator alongside the SF
+    // time — reads as page furniture once it's there. Only the denied
+    // state auto-dismisses so it doesn't linger as a complaint.
+    if (result !== 'granted') {
+      setTimeout(() => setState('hidden'), 1800);
+    }
   };
 
   if (state === 'init' || state === 'hidden') return null;
