@@ -154,14 +154,11 @@ export function CustomCursor({ theme }) {
 // ─── Topbar ──────────────────────────────────────────────────────────
 export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChange }) {
   const pressTimer = useRef(null);
-  const longPressed = useRef(false);
   const [pressing, setPressing] = useState(false);
 
   const startPress = (e) => {
     setPressing(true);
-    longPressed.current = false;
     pressTimer.current = setTimeout(() => {
-      longPressed.current = true; // suppress the click that mouseup/touchend emits
       onLogoLongPress();
       setPressing(false);
     }, 800);
@@ -169,12 +166,6 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChang
   const cancelPress = () => {
     clearTimeout(pressTimer.current);
     setPressing(false);
-  };
-  // A long-press emits a trailing click; swallow it so cycling the hero
-  // experience doesn't also flip the theme. A plain tap still toggles.
-  const handleLogoClick = () => {
-    if (longPressed.current) { longPressed.current = false; return; }
-    onToggleTheme();
   };
   const handleLogoEnter = () => onLogoHoverChange?.(true);
   const handleLogoLeave = () => {
@@ -210,12 +201,11 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChang
     <div className={`topbar ${scrolled ? '' : 'at-top'}`}>
       <button
         className={`logo-btn ${pressing ? 'pressing' : ''}`}
-        onClick={handleLogoClick}
         onMouseEnter={handleLogoEnter}
         onMouseLeave={handleLogoLeave}
         onMouseDown={startPress} onMouseUp={cancelPress}
         onTouchStart={startPress} onTouchEnd={cancelPress} onTouchCancel={cancelPress}
-        aria-label="Toggle theme · long-press to change hero style"
+        aria-label="Long-press to change hero style"
       >
         <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
           {theme === 'dark' ? 'AK.' : 'AK.'}
