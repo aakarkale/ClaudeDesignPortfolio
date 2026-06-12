@@ -584,7 +584,7 @@ function initDots(host, canvas, ctx) {
     const dark = isDark();
     // Mobile eased back very slightly vs desktop (no cursor to draw the
     // eye, so a calmer resting grid reads better).
-    const baseA = fine ? (dark ? 0.32 : 0.36) : (dark ? 0.28 : 0.32);
+    const baseA = fine ? (dark ? 0.32 : 0.36) : (dark ? 0.22 : 0.26);
     for (let i = 0; i < dots.length; i++) {
       const d = dots[i];
       const dx = d.x - ptr.x, dy = d.y - ptr.y, dd = Math.hypot(dx, dy);
