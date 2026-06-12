@@ -992,22 +992,19 @@ section[data-section="hero"] {
 }
 .lp-toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Right side of the hero meta strip: stacks the SF time indicator and
-   the iOS motion hint into a tight right-aligned column. */
-.hero-meta-right {
-  display: flex; flex-direction: column; align-items: flex-end;
-  gap: 6px; margin-left: auto;
-}
-
 /* iOS motion-permission hint — rendered only on touch devices where
-   DeviceOrientationEvent.requestPermission exists (iOS). Sits in the
-   meta strip under the SF time, mirroring its mono-caps style so it
-   reads as page furniture rather than a notification. */
+   DeviceOrientationEvent.requestPermission exists (iOS). Sits as the
+   second item in the hero meta strip, in DOM order eyebrow → hint →
+   SF time. On mobile the meta strip naturally wraps so the eyebrow
+   takes row 1 alone and the hint + SF time share row 2 (hint left,
+   SF right via space-between) — putting the hint directly under the
+   eyebrow as page furniture. Glowing accent dot + outward ring marks
+   it as actionable. */
 .motion-hint {
-  display: inline-flex; align-items: center; gap: 7px;
+  display: inline-flex; align-items: center; gap: 10px;
   background: transparent; border: 0; padding: 2px 0;
   color: var(--text-3);
-  font: 500 10px/1 var(--font-mono);
+  font: 500 11px/1 var(--font-mono);
   letter-spacing: 0.32em;
   text-transform: uppercase;
   cursor: pointer;
@@ -1015,25 +1012,46 @@ section[data-section="hero"] {
   transition: opacity 700ms ease, color 300ms ease;
   -webkit-tap-highlight-color: transparent;
 }
-.motion-hint.on-ask     { opacity: 0.78; }
+.motion-hint.on-ask     { opacity: 0.95; }
 .motion-hint.on-ask:active { color: var(--accent); }
 .motion-hint.on-granted { opacity: 1; color: var(--accent); }
 .motion-hint.on-denied  { opacity: 0.5; color: var(--text-4); }
 .motion-hint-dot {
-  width: 6px; height: 6px; border-radius: 50%;
+  position: relative;
+  width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 6px color-mix(in oklab, var(--accent) 55%, transparent);
-  animation: motion-hint-pulse 1.8s ease-in-out infinite;
+  box-shadow:
+    0 0 6px var(--accent),
+    0 0 14px color-mix(in oklab, var(--accent) 70%, transparent),
+    0 0 24px color-mix(in oklab, var(--accent) 45%, transparent);
+  animation: motion-hint-pulse 1.6s ease-in-out infinite;
+}
+/* A second outward ring keeps "pulsing" outward like a beacon — clearly
+   signals "tap me" without adding any DOM. */
+.motion-hint-dot::after {
+  content: '';
+  position: absolute; inset: -3px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  animation: motion-hint-ring 1.6s ease-out infinite;
+  pointer-events: none;
 }
 .motion-hint.on-denied .motion-hint-dot {
   background: var(--text-4); box-shadow: none; animation: none;
 }
+.motion-hint.on-denied .motion-hint-dot::after { display: none; }
 @keyframes motion-hint-pulse {
-  0%, 100% { opacity: 0.55; transform: scale(0.85); }
-  50%      { opacity: 1;    transform: scale(1); }
+  0%, 100% { transform: scale(0.88); }
+  50%      { transform: scale(1.05); }
+}
+@keyframes motion-hint-ring {
+  0%   { transform: scale(0.7); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .motion-hint-dot { animation: none; }
+  .motion-hint-dot,
+  .motion-hint-dot::after { animation: none; }
+  .motion-hint-dot::after { opacity: 0.35; transform: scale(1.4); }
 }
 
 /* ============================================================

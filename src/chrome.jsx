@@ -184,7 +184,7 @@ export function GyroPrompt() {
   if (state === 'init' || state === 'hidden') return null;
   const label = state === 'granted' ? 'motion on'
     : state === 'denied'             ? 'motion off'
-    :                                  'tilt · tap';
+    :                                  'tap for motion';
   return (
     <button className={`motion-hint on-${state}`} onClick={onTap} aria-label={label}>
       <span className="motion-hint-dot" aria-hidden="true" />
@@ -291,11 +291,9 @@ export function Hero({ theme, data, heroMode }) {
       <div className="hero-wrap">
         <div className="hero-meta reveal">
           <div className="eyebrow">Available for the right problem</div>
-          <div className="hero-meta-right">
-            <div className="hero-time">
-              <span className="live-dot" /> SF · {sfTime}
-            </div>
-            <GyroPrompt />
+          <GyroPrompt />
+          <div className="hero-time">
+            <span className="live-dot" /> SF · {sfTime}
           </div>
         </div>
 
