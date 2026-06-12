@@ -531,13 +531,16 @@ function initSpotlight(host, canvas, ctx) {
 function initDots(host, canvas, ctx) {
   const reduced = prefersReduced();
   const fine = finePointer();
-  let W = 0, H = 0, DPR = 1, dots = [], color = '255,255,255';
+  let W = 0, H = 0, DPR = 1, dots = [], base = [255, 255, 255], acc = [255, 221, 85];
   let formStart = performance.now();
   const ptr = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
-  const REPEL = 100;
+  const REPEL = 110;
   const SP = 26; // grid spacing in CSS px
 
-  const colors = () => { color = isDark() ? '255,255,255' : '20,20,20'; };
+  const colors = () => {
+    base = isDark() ? [255, 255, 255] : [20, 20, 20];
+    acc = rgbOf('--accent', [255, 221, 85]);
+  };
 
   const buildField = () => {
     const cols = Math.ceil(W / SP), rows = Math.ceil(H / SP);
@@ -571,7 +574,7 @@ function initDots(host, canvas, ctx) {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
     const dark = isDark();
-    const baseA = dark ? 0.24 : 0.28;
+    const baseA = dark ? 0.42 : 0.46;
     for (let i = 0; i < dots.length; i++) {
       const d = dots[i];
       const dx = d.x - ptr.x, dy = d.y - ptr.y, dd = Math.hypot(dx, dy);
@@ -584,9 +587,15 @@ function initDots(host, canvas, ctx) {
       }
       d.x += (d.tx - d.x) * 0.12;
       d.y += (d.ty - d.y) * 0.12;
-      const a = baseA + near * 0.5;
-      const s = 1.4 + near * 1.8;
-      ctx.fillStyle = `rgba(${color},${a})`;
+      // Dots near the pointer tint toward the theme accent and grow —
+      // the disturbance reads as a clear warm glow moving through the
+      // grid rather than a subtle shimmer.
+      const r = base[0] + (acc[0] - base[0]) * near;
+      const g = base[1] + (acc[1] - base[1]) * near;
+      const b = base[2] + (acc[2] - base[2]) * near;
+      const a = baseA + near * 0.55;
+      const s = 2.3 + near * 2.6;
+      ctx.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${a})`;
       ctx.fillRect(d.x - s / 2, d.y - s / 2, s, s);
     }
   };
