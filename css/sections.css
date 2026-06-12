@@ -542,89 +542,162 @@ section[data-section="hero"] {
 }
 
 /* ============================================================
-   WORK — mobile swipe deck
+   WORK — mobile carousel (scroll-snap, App Store style)
    ============================================================ */
-.swipe-stage {
+.wc-stage {
   position: relative;
-  padding: 20px 0 40px;
-  display: flex; flex-direction: column; align-items: center; gap: 24px;
-  min-height: 560px;
+  padding: 8px 0 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
 }
-.swipe-deck {
-  position: relative;
-  width: min(340px, 84vw);
-  height: 440px;
+
+/* Accent glows — one per project, stacked behind the deck; the rAF
+   drives each one's opacity by how centred its card is, so the colour
+   cross-fades as you browse. */
+.wc-glows {
+  position: absolute;
+  top: 0; left: 50%;
+  width: min(480px, 110vw); height: 480px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
 }
-.swipe-card {
+.wc-glow {
   position: absolute; inset: 0;
+  opacity: 0;
+  will-change: opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wc-glows { display: none; }
+}
+
+/* Full-bleed snap track; side padding centres the first/last card while
+   letting neighbours peek in from both edges. */
+.wc-track {
+  position: relative;
+  z-index: 1;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  padding: 16px calc(50% - min(39vw, 170px)) 28px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.wc-track::-webkit-scrollbar { display: none; }
+
+.wc-item {
+  flex: 0 0 min(78vw, 340px);
+  scroll-snap-align: center;
+  scroll-snap-stop: always; /* every card is a detent — pairs with the haptic tick */
+}
+
+.wc-card {
+  display: flex; flex-direction: column;
+  height: 440px;
   background: var(--surface-4);
   border: 1px solid var(--border);
   border-radius: 24px;
   padding: 28px;
-  display: flex; flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-  will-change: transform;
+  text-decoration: none;
+  color: inherit;
   user-select: none;
-  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform, opacity;
+  transform-origin: 50% 60%;
 }
-:root[data-theme='light'] .swipe-card {
-  background: var(--surface-4);
+:root[data-theme='light'] .wc-card {
   border: 1px solid var(--text-1);
   box-shadow: 6px 6px 0 var(--text-1);
 }
-.swipe-card-top { cursor: grab; }
-.swipe-card-top:active { cursor: grabbing; }
+.wc-card .proj-face { will-change: transform; }
+.wc-card:active { border-color: color-mix(in oklab, var(--accent) 45%, var(--border)); }
 
-.swipe-badge {
-  position: absolute; top: 28px;
-  padding: 8px 14px; border-radius: 100px;
-  font: 700 11px/1 var(--font-mono);
-  letter-spacing: 0.3em; text-transform: uppercase;
-  pointer-events: none;
-  border: 2px solid;
-}
-.swipe-badge-right {
-  right: 24px; color: var(--accent); border-color: var(--accent);
-  transform: rotate(14deg);
-}
-.swipe-badge-left {
-  left: 24px; color: var(--text-3); border-color: var(--text-3);
-  transform: rotate(-14deg);
+@media (max-width: 380px) {
+  .wc-card { height: 420px; padding: 24px; border-radius: 20px; }
 }
 
-.swipe-meta {
+/* Staggered entrance when the stage first reveals */
+.wc-stage.in .wc-item {
+  animation: wc-rise 700ms cubic-bezier(.2,.8,.2,1) backwards;
+  animation-delay: calc(var(--i) * 80ms);
+}
+@keyframes wc-rise {
+  from { opacity: 0; transform: translateY(36px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wc-stage.in .wc-item { animation: none; }
+}
+
+.wc-meta {
   display: flex; align-items: center; justify-content: space-between;
   width: min(340px, 84vw);
+  z-index: 1;
 }
-.swipe-counter {
+.wc-counter {
   font: 500 12px/1 var(--font-mono);
   color: var(--text-3);
   letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
 }
-.swipe-hint {
+.wc-hint {
   font: 500 10px/1 var(--font-mono);
   color: var(--text-4);
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
-.swipe-dots { display: flex; gap: 6px; }
-.swipe-dot {
-  width: 24px; height: 3px; border-radius: 10px;
-  background: var(--border); transition: all 300ms;
+/* Scrubber — a draggable progress bar. The visual line is 4px but the
+   touch target is the full 28px-tall strip. Ticks light as you pass. */
+.wc-scrub {
+  position: relative;
+  width: min(340px, 84vw);
+  height: 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  touch-action: none;
+  cursor: pointer;
+  z-index: 1;
 }
-.swipe-dot.on { background: var(--accent); width: 40px; }
+.wc-scrub-line {
+  position: absolute; left: 0; right: 0; top: 50%;
+  height: 4px; transform: translateY(-50%);
+  border-radius: 10px;
+  background: var(--border);
+  overflow: hidden;
+}
+.wc-scrub-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, color-mix(in oklab, var(--accent) 55%, transparent), var(--accent));
+}
+.wc-tick {
+  position: relative;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--surface-5);
+  border: 1px solid var(--border);
+  transition: background 250ms, border-color 250ms, transform 250ms;
+}
+.wc-tick.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.15);
+}
 
-.swipe-controls { display: flex; gap: 12px; }
-.swipe-btn {
+.wc-controls { display: flex; gap: 12px; z-index: 1; }
+.wc-btn {
   all: unset; cursor: pointer;
   width: 44px; height: 44px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--surface-4); border: 1px solid var(--border);
   font-size: 18px; color: var(--text-1);
   transition: all 200ms;
+  -webkit-tap-highlight-color: transparent;
 }
-.swipe-btn:active { transform: scale(0.9); }
+.wc-btn:active { transform: scale(0.9); border-color: var(--accent); }
 
 /* ============================================================
    EXPERIENCE
@@ -1274,13 +1347,7 @@ section[data-section="hero"] {
   .stat-num { font-size: 24px; }
   .stat-label { font-size: 10px; letter-spacing: 0.1em; }
 
-  /* Work — swipe deck */
-  .swipe-stage { min-height: 520px; gap: 18px; padding: 12px 0 28px; }
-  .swipe-deck { width: min(320px, 86vw); height: 420px; }
-  .swipe-card { padding: 24px; border-radius: 20px; }
-  .swipe-badge { top: 22px; padding: 6px 12px; font-size: 10px; letter-spacing: 0.25em; }
-  .swipe-badge-right { right: 18px; }
-  .swipe-badge-left  { left: 18px; }
+  /* Work — carousel cards */
   .proj-title { font-size: 26px; }
   .proj-big .proj-title, .proj-wide .proj-title { font-size: 28px; }
 
