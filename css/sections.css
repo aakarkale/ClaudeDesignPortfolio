@@ -106,6 +106,18 @@ section[data-section="hero"] {
 .pre-intro .hero-mag-title,
 .pre-intro .hero-mag-sub { transform: translateY(130%); }
 
+/* Magnetic hero mode renders the title as these per-letter spans, each
+   pulled toward the cursor (see hero-modes.js → initMagnetic). */
+.hero-letter { display: inline-block; will-change: transform; }
+/* The accent word's gradient is clipped to text on the word; inline-block
+   letter children would otherwise drop out of that clip, so give each
+   accent letter its own gradient fill. */
+.hero-word-accent .hero-letter {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2) 60%, var(--accent-3));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+
 /* Light hero — editorial magazine */
 :root[data-theme='light'] .hero-title {
   font-family: var(--font-display);
