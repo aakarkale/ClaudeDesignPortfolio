@@ -992,6 +992,42 @@ section[data-section="hero"] {
 }
 .lp-toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* iOS gyroscope permission pill — only rendered on touch devices where
+   DeviceOrientationEvent.requestPermission exists (iOS). The 'ask' state
+   pulses subtly so it's findable; once tapped it briefly confirms then
+   dismisses for the session. */
+.gyro-prompt {
+  position: fixed; left: 50%; bottom: 84px;
+  transform: translateX(-50%) translateY(16px);
+  padding: 11px 18px; border-radius: 100px;
+  background: var(--surface-4); color: var(--text-1);
+  border: 1px solid var(--border);
+  font: 600 12px/1 var(--font-body); letter-spacing: 0.01em;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.32);
+  z-index: 990; cursor: pointer;
+  opacity: 0; transition: opacity 320ms ease, transform 320ms cubic-bezier(.2,.8,.2,1);
+  -webkit-tap-highlight-color: transparent;
+}
+.gyro-prompt.on-ask {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+  animation: gyro-pulse 2.4s ease-in-out infinite;
+}
+.gyro-prompt.on-granted {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+  color: var(--accent); border-color: color-mix(in oklab, var(--accent) 60%, transparent);
+}
+.gyro-prompt.on-denied {
+  opacity: 0.85; transform: translateX(-50%) translateY(0);
+  color: var(--text-3);
+}
+@keyframes gyro-pulse {
+  0%, 100% { box-shadow: 0 12px 28px rgba(0,0,0,0.32), 0 0 0 0 color-mix(in oklab, var(--accent) 35%, transparent); }
+  50%      { box-shadow: 0 12px 28px rgba(0,0,0,0.32), 0 0 0 12px transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gyro-prompt.on-ask { animation: none; }
+}
+
 /* ============================================================
    LIGHT MODE TEXTURE / EXTRAS
    ============================================================ */

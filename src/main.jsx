@@ -5,11 +5,33 @@ import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import { createRoot } from 'react-dom/client';
 
 import { AK_DATA } from './data.js';
-import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer } from './chrome.jsx';
+import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer, GyroPrompt } from './chrome.jsx';
 import { HERO_MODES } from './hero-modes.js';
 import { About, Work, Experience, Skills, TechReel, Contact } from './sections.jsx';
 import { initMotion } from './motion.js';
 import './easter-eggs.js';  // side-effect: sets window.initEasterEggs
+
+// Lightweight haptic tap on every press of an interactive control —
+// theme toggle, nav links, hero CTAs, project cards, chips, etc. Uses
+// the same Vibration API as useSectionHaptics, with the same platform
+// behaviour: Android fires the haptic motor, iOS Safari no-ops (no
+// public Taptic Engine binding on the web).
+function useClickHaptics() {
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(pointer: fine)').matches) return;
+    const SEL = 'button, a, .btn, .chip, .proj-card, .swipe-card, [data-cursor="on"]';
+    const onTap = (e) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      if (!t.closest(SEL)) return;
+      try { navigator.vibrate(8); } catch (err) {}
+    };
+    document.addEventListener('click', onTap, { passive: true });
+    return () => document.removeEventListener('click', onTap);
+  }, []);
+}
 
 // Subtle haptic tick on the visitor's first arrival into each main
 // section while scrolling. Uses navigator.vibrate (Android Chrome /
@@ -61,7 +83,12 @@ function App() {
   const [heroMode] = useState(() => {
     try {
       const prev = localStorage.getItem('ak_hero_mode');
-      const next = HERO_MODES[(HERO_MODES.indexOf(prev) + 1) % HERO_MODES.length];
+      // Magnetic is dropped from the mobile rotation — without a real
+      // cursor it never gets to feel as kinetic as it does on desktop,
+      // and the other three look better on a small screen.
+      const isMobile = window.matchMedia('(pointer: coarse)').matches;
+      const cycle = isMobile ? HERO_MODES.filter(m => m !== 'magnetic') : HERO_MODES;
+      const next = cycle[(cycle.indexOf(prev) + 1) % cycle.length];
       localStorage.setItem('ak_hero_mode', next);
       return next;
     } catch (e) { return HERO_MODES[0]; }
@@ -70,6 +97,7 @@ function App() {
 
   useReveal();
   useSectionHaptics();
+  useClickHaptics();
 
   // useLayoutEffect so GSAP stamps the hero entrance's initial state
   // before the browser's first paint — avoids the rest-position flash
@@ -137,6 +165,7 @@ function App() {
       <div className={`lp-toast ${lpToast ? 'on' : ''}`}>
         {lpToast || 'Hi there 👋'}
       </div>
+      <GyroPrompt />
     </>
   );
 }

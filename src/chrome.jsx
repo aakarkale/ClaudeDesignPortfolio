@@ -151,6 +151,51 @@ export function CustomCursor({ theme }) {
   );
 }
 
+// ─── Gyro permission prompt (iOS only) ──────────────────────────────
+// iOS Safari only honours DeviceOrientationEvent.requestPermission() when
+// it's called synchronously from a click on an actual interactive element
+// — a document-level "first tap anywhere" listener is unreliable. This
+// pill is that explicit element. Android/desktop/reduced-motion never see
+// it. Once the visitor responds (grant or deny) the pill fades out and
+// stays gone for the rest of the session.
+export function GyroPrompt() {
+  const [state, setState] = useState('init');
+  useEffect(() => {
+    if (state !== 'init') return;
+    const DOE = typeof DeviceOrientationEvent !== 'undefined' ? DeviceOrientationEvent : null;
+    if (!DOE || typeof DOE.requestPermission !== 'function') return;
+    if (window.matchMedia('(pointer: fine)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (sessionStorage.getItem('ak_motion_asked') === '1') return;
+    // Slight delay so the pill arrives after the hero entrance, not during it.
+    const t = setTimeout(() => setState('ask'), 1500);
+    return () => clearTimeout(t);
+  }, [state]);
+
+  const onTap = async () => {
+    // Must be inside this click handler synchronously for iOS to consider
+    // it user-activated. Persist the answer for this session so we don't
+    // re-prompt on every scroll-driven re-render of the App tree.
+    let result = 'denied';
+    try { result = await DeviceOrientationEvent.requestPermission(); } catch (e) {}
+    try { sessionStorage.setItem('ak_motion_asked', '1'); } catch (e) {}
+    setState(result === 'granted' ? 'granted' : 'denied');
+    setTimeout(() => setState('hidden'), result === 'granted' ? 1400 : 2200);
+  };
+
+  if (state === 'init' || state === 'hidden') return null;
+  const label = state === 'granted'
+    ? '✓ Motion enabled · tilt your phone'
+    : state === 'denied'
+    ? 'Motion permission denied'
+    : 'Tilt to interact · Tap to enable';
+  return (
+    <button className={`gyro-prompt on-${state}`} onClick={onTap} aria-label={label}>
+      {label}
+    </button>
+  );
+}
+
 // ─── Topbar ──────────────────────────────────────────────────────────
 export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChange }) {
   const pressTimer = useRef(null);
