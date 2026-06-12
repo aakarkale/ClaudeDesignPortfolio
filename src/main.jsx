@@ -11,6 +11,42 @@ import { About, Work, Experience, Skills, TechReel, Contact } from './sections.j
 import { initMotion } from './motion.js';
 import './easter-eggs.js';  // side-effect: sets window.initEasterEggs
 
+// Subtle haptic tick on the visitor's first arrival into each main
+// section while scrolling. Uses navigator.vibrate (Android Chrome /
+// Firefox / Edge fire the device's haptic motor — typically Android's
+// Advanced Haptics on newer hardware). iOS Safari does not expose the
+// Taptic Engine to the web at all, so the call no-ops cleanly there.
+// Desktop and reduced-motion visitors are skipped.
+function useSectionHaptics() {
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(pointer: fine)').matches) return; // mobile only
+    const ids = ['about', 'work', 'experience', 'skills', 'contact'];
+    const seen = new Set();
+    let lastAt = 0;
+    // rootMargin shrinks the bottom half of the viewport — a section is
+    // considered "appearing" the moment any pixel of it crosses into the
+    // top half of the screen. Works equally well for short and tall
+    // sections (Experience is ~3600px; a percentage threshold would
+    // never trip cleanly on it).
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        if (seen.has(e.target.id)) continue;
+        seen.add(e.target.id);
+        // Throttle in case two sections enter back-to-back during a fast flick.
+        const now = performance.now();
+        if (now - lastAt < 250) continue;
+        lastAt = now;
+        try { navigator.vibrate(12); } catch (e) {}
+      }
+    }, { rootMargin: '0px 0px -50% 0px', threshold: 0 });
+    ids.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    return () => io.disconnect();
+  }, []);
+}
+
 function App() {
   const [theme, toggleTheme] = useTheme();
   const [konami, setKonami] = useState(false);
@@ -33,6 +69,7 @@ function App() {
   const data = AK_DATA;
 
   useReveal();
+  useSectionHaptics();
 
   // useLayoutEffect so GSAP stamps the hero entrance's initial state
   // before the browser's first paint — avoids the rest-position flash
