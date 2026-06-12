@@ -85,6 +85,35 @@ function loopWhileVisible(host, frame) {
   return () => { halt(); vis.stop(); };
 }
 
+// Drive an ambient "virtual pointer" so coarse-pointer (mobile) devices
+// still see the hero experiences come alive — there's no cursor to track.
+// It calls onMove with a fake { clientX, clientY } in viewport coords, so
+// each mode reuses its existing pointer handler unchanged. Combines a slow
+// Lissajous wander (so things drift even at rest) with a small scroll
+// bleed (so the user feels in control when they swipe). Only runs while
+// the hero is on-screen; skipped entirely under reduced motion.
+function ambientDriver(host, onMove) {
+  if (prefersReduced()) return () => {};
+  const t0 = performance.now();
+  return loopWhileVisible(host, (now) => {
+    const r = host.getBoundingClientRect();
+    if (r.bottom <= 0 || r.top >= window.innerHeight) return;
+    const t = (now - t0) / 1000;
+    // Lissajous wander — fast enough to read as motion at a glance,
+    // biased toward the upper half of the hero where the title lives.
+    const u = 0.5 + Math.sin(t * 0.78) * 0.38;
+    const v = 0.40 + Math.cos(t * 0.55) * 0.30;
+    // Each viewport scrolled past the hero nudges the pointer; capped
+    // so a fast flick can't fling the pointer off the field.
+    const sBleed = Math.max(-0.18, Math.min(0.18,
+      (window.scrollY / Math.max(1, r.height)) * 0.22));
+    onMove({
+      clientX: r.left + u * r.width,
+      clientY: r.top + (v + sBleed) * r.height,
+    });
+  });
+}
+
 // ── Mode 1: TOPO (the original) ───────────────────────────────────────
 function initTopo(host, canvas, ctx) {
   const reduced = prefersReduced();
@@ -226,16 +255,21 @@ function initTopo(host, canvas, ctx) {
     else draw();
   });
 
+  let stopAmbient = () => {};
   if (fine && !reduced) {
     window.addEventListener('mousemove', onMove, { passive: true });
     document.documentElement.addEventListener('mouseleave', onLeave);
+  } else if (!reduced) {
+    // Mobile / coarse pointer: synthesise a virtual pointer so the
+    // contour repel still has something to react to.
+    stopAmbient = ambientDriver(host, onMove);
   }
 
   return () => {
     cancelAnimationFrame(raf);
     window.removeEventListener('mousemove', onMove);
     document.documentElement.removeEventListener('mouseleave', onLeave);
-    stopSize(); stopTheme(); vis.stop();
+    stopAmbient(); stopSize(); stopTheme(); vis.stop();
   };
 }
 
@@ -280,13 +314,22 @@ function initMagnetic(host, canvas, ctx) {
   const stopSize = observeSize(host, canvas, (w, h, dpr) => { W = w; H = h; DPR = Math.min(dpr, 1.5); drawGlow(); }, 1.5);
   const stopTheme = observeTheme(drawGlow);
 
-  if (reduced || !fine) {
+  // Reduced motion: keep just the static glow. Mobile (coarse) still
+  // splits the title and runs the magnetic field — driven by an ambient
+  // virtual pointer below, since there's no cursor.
+  if (reduced) {
     return () => { stopSize(); stopTheme(); };
   }
 
   let letters = [], quick = [], moveBound = null, resizeBound = null;
+  let stopAmbient = () => {};
   const gsap = window.gsap;
-  const RADIUS = 150, STR = 0.42;
+  // Wider radius and a touch more strength on mobile so the ambient
+  // virtual pointer visibly affects a swath of letters at a time — a
+  // single 150px reach passing slowly across the title is too sparse
+  // to read as "alive" without a real cursor.
+  const RADIUS = fine ? 150 : 240;
+  const STR = fine ? 0.42 : 0.52;
 
   const measure = () => {
     for (const L of letters) {
@@ -325,14 +368,18 @@ function initMagnetic(host, canvas, ctx) {
       letters.forEach((L) => { L.el.style.transform = ''; });
       measure();
     };
-    window.addEventListener('mousemove', moveBound, { passive: true });
+    if (fine) {
+      window.addEventListener('mousemove', moveBound, { passive: true });
+    } else {
+      stopAmbient = ambientDriver(host, moveBound);
+    }
     window.addEventListener('resize', resizeBound, { passive: true });
   };
 
   const stopReady = whenHeroReady(wire);
 
   return () => {
-    stopSize(); stopTheme(); stopReady();
+    stopSize(); stopTheme(); stopReady(); stopAmbient();
     if (moveBound) window.removeEventListener('mousemove', moveBound);
     if (resizeBound) window.removeEventListener('resize', resizeBound);
     if (gsap && letters.length) gsap.killTweensOf(letters.map((L) => L.el));
@@ -407,16 +454,20 @@ function initSpotlight(host, canvas, ctx) {
   const onLeave = () => { ptr.tx = W / 2; ptr.ty = H * 0.42; };
 
   let stopLoop = () => {};
+  let stopAmbient = () => {};
   if (!reduced) {
     stopLoop = loopWhileVisible(host, draw);
     if (fine) {
       window.addEventListener('mousemove', onMove, { passive: true });
       document.documentElement.addEventListener('mouseleave', onLeave);
+    } else {
+      // Mobile: ambient pointer slowly walks the spotlight around the hero.
+      stopAmbient = ambientDriver(host, onMove);
     }
   }
 
   return () => {
-    stopLoop(); stopSize(); stopTheme();
+    stopLoop(); stopAmbient(); stopSize(); stopTheme();
     window.removeEventListener('mousemove', onMove);
     document.documentElement.removeEventListener('mouseleave', onLeave);
   };
@@ -519,9 +570,13 @@ function initDots(host, canvas, ctx) {
     else { formStart = performance.now(); wake(); }
   });
 
+  let stopAmbient = () => {};
   if (fine && !reduced) {
     window.addEventListener('mousemove', onMove, { passive: true });
     document.documentElement.addEventListener('mouseleave', onLeave);
+  } else if (!reduced) {
+    // Mobile: ambient pointer scatters the grid as it wanders.
+    stopAmbient = ambientDriver(host, onMove);
   }
   if (reduced) {
     // settle straight to formed
@@ -533,7 +588,7 @@ function initDots(host, canvas, ctx) {
     cancelAnimationFrame(raf);
     window.removeEventListener('mousemove', onMove);
     document.documentElement.removeEventListener('mouseleave', onLeave);
-    stopSize(); stopTheme(); vis.stop();
+    stopAmbient(); stopSize(); stopTheme(); vis.stop();
   };
 }
 
