@@ -1,16 +1,15 @@
 // ====================================================================
-// Hero FX — five swappable backdrop "experiences" for the hero section.
+// Hero FX — four swappable backdrop "experiences" for the hero section.
 // The user cycles them with a long-press on the AK. logo; the choice is
 // persisted (see main.jsx). Each mode is a self-contained initializer
 // that owns its own canvas drawing, listeners, observers and rAF loop,
 // and returns a single cleanup function. createHeroFX() is the small
 // controller that swaps between them.
 //
+//   dots      — a dot-matrix field across the hero; cursor scatters it
 //   topo      — topographic contour field, cursor repels the lines
-//   aurora    — breathing multi-colour gradient mesh (ambient)
-//   magnetic  — title letters are pulled toward the cursor (kinetic type)
 //   spotlight — dark hero; cursor is a soft light revealing texture
-//   dots      — a dot-matrix "AK" monogram assembles, scatters on hover
+//   magnetic  — title letters are pulled toward the cursor (kinetic type)
 //
 // Everything degrades gracefully: prefers-reduced-motion paints one calm
 // static frame and skips loops/pointer reactivity; coarse pointers skip
@@ -18,10 +17,10 @@
 // when present, falls back to inline transforms otherwise).
 // ====================================================================
 
-export const HERO_MODES = ['topo', 'aurora', 'magnetic', 'spotlight', 'dots'];
+// Long-press cycle order: dots → topo → spotlight → magnetic → (repeat).
+export const HERO_MODES = ['dots', 'topo', 'spotlight', 'magnetic'];
 export const HERO_LABELS = {
   topo: 'Topographic',
-  aurora: 'Aurora Mesh',
   magnetic: 'Magnetic Type',
   spotlight: 'Spotlight',
   dots: 'Dot Matrix',
@@ -240,102 +239,7 @@ function initTopo(host, canvas, ctx) {
   };
 }
 
-// ── Mode 2: AURORA MESH ───────────────────────────────────────────────
-// A handful of large, slowly drifting radial-gradient "blobs" rendered to
-// a half-res offscreen buffer then upscaled (cheap + extra soft). Dark
-// theme glows additively; light theme washes like ink (multiply).
-function initAurora(host, canvas, ctx) {
-  const reduced = prefersReduced();
-  const fine = finePointer();
-  const off = document.createElement('canvas');
-  const octx = off.getContext('2d');
-  const SCALE = 0.5;
-  let W = 0, H = 0, DPR = 1, blobs = [], base = '#0a0a0b', comp = 'lighter';
-  const t0 = performance.now();
-  const ptr = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 };
-
-  const colors = () => {
-    const dark = isDark();
-    base = dark ? '#0a0a0b' : '#f4efe6';
-    comp = dark ? 'lighter' : 'multiply';
-    const acc = rgbOf('--accent', [255, 221, 85]);
-    const a2 = rgbOf('--accent-2', [115, 115, 255]);
-    const a3 = rgbOf('--accent-3', [255, 133, 115]);
-    const extra = dark ? [70, 110, 255] : [150, 110, 200];
-    const cols = [acc, a2, a3, extra, acc];
-    const alpha = dark ? 0.5 : 0.34;
-    blobs = cols.map((c, i) => ({
-      c, a: alpha,
-      bx: 0.18 + 0.64 * ((i * 0.41 + 0.12) % 1),
-      by: 0.2 + 0.6 * ((i * 0.62 + 0.3) % 1),
-      ax: 0.16 + 0.1 * (((i * 7) % 3) / 3),
-      ay: 0.14 + 0.12 * (((i * 5) % 4) / 4),
-      sx: 0.05 + 0.03 * i,
-      sy: 0.045 + 0.04 * (((i * 3) % 5) / 5),
-      ph: i * 1.7,
-      r: 0.52 + 0.2 * (((i * 11) % 5) / 5),
-    }));
-  };
-
-  const frame = (now) => {
-    const t = (now - t0) / 1000;
-    const ow = off.width, oh = off.height;
-    ptr.x += (ptr.tx - ptr.x) * 0.06;
-    ptr.y += (ptr.ty - ptr.y) * 0.06;
-    octx.globalCompositeOperation = 'source-over';
-    octx.fillStyle = base;
-    octx.fillRect(0, 0, ow, oh);
-    octx.globalCompositeOperation = comp;
-    const mx = ptr.x - 0.5, my = ptr.y - 0.5;
-    for (const b of blobs) {
-      const cx = (b.bx + Math.sin(t * b.sx * 6.28 + b.ph) * b.ax + mx * 0.07) * ow;
-      const cy = (b.by + Math.cos(t * b.sy * 6.28 + b.ph * 1.3) * b.ay + my * 0.07) * oh;
-      const rad = b.r * Math.max(ow, oh) * 0.85;
-      const g = octx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-      const [r, gn, bl] = b.c;
-      g.addColorStop(0, `rgba(${r},${gn},${bl},${b.a})`);
-      g.addColorStop(1, `rgba(${r},${gn},${bl},0)`);
-      octx.fillStyle = g;
-      octx.beginPath(); octx.arc(cx, cy, rad, 0, 6.2832); octx.fill();
-    }
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.imageSmoothingEnabled = true;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(off, 0, 0, ow, oh, 0, 0, canvas.width, canvas.height);
-  };
-
-  const build = (w, h, dpr) => {
-    W = w; H = h; DPR = Math.min(dpr, 1.25);
-    canvas.width = Math.round(W * DPR);
-    canvas.height = Math.round(H * DPR);
-    off.width = Math.max(1, Math.round(W * SCALE));
-    off.height = Math.max(1, Math.round(H * SCALE));
-    colors();
-    frame(performance.now());
-  };
-
-  const stopSize = observeSize(host, canvas, build, 1.25);
-  const stopTheme = observeTheme(() => { colors(); frame(performance.now()); });
-
-  const onMove = (e) => {
-    const r = host.getBoundingClientRect();
-    ptr.tx = (e.clientX - r.left) / Math.max(1, r.width);
-    ptr.ty = (e.clientY - r.top) / Math.max(1, r.height);
-  };
-
-  let stopLoop = () => {};
-  if (!reduced) {
-    stopLoop = loopWhileVisible(host, frame);
-    if (fine) window.addEventListener('mousemove', onMove, { passive: true });
-  }
-
-  return () => {
-    stopLoop(); stopSize(); stopTheme();
-    window.removeEventListener('mousemove', onMove);
-  };
-}
-
-// ── Mode 3: MAGNETIC TYPE ─────────────────────────────────────────────
+// ── Mode 2: MAGNETIC TYPE ─────────────────────────────────────────────
 // While this mode is active, React renders the hero title as per-letter
 // .hero-letter spans (see chrome.jsx) — we never mutate React-owned DOM
 // ourselves. Here we just pull each letter toward the cursor with a
@@ -436,7 +340,7 @@ function initMagnetic(host, canvas, ctx) {
   };
 }
 
-// ── Mode 4: SPOTLIGHT ─────────────────────────────────────────────────
+// ── Mode 3: SPOTLIGHT ─────────────────────────────────────────────────
 // The hero reads dark; a soft accent light follows the cursor and reveals
 // a faint dot texture only within its reach. Idle = the light parks center
 // and breathes. Title stays fully legible (it sits above the canvas).
@@ -518,44 +422,35 @@ function initSpotlight(host, canvas, ctx) {
   };
 }
 
-// ── Mode 5: DOT MATRIX ────────────────────────────────────────────────
-// A large "AK" monogram, sampled from offscreen text into a dot field,
-// assembles from scattered positions on load and scatters away from the
-// cursor. Sits low-opacity behind the title like an animated watermark.
+// ── Mode 4: DOT MATRIX ────────────────────────────────────────────────
+// A dot grid spanning the whole hero. The dots assemble from a scatter on
+// load and the cursor pushes the nearby ones aside (they spring back). The
+// .hero-backdrop radial mask fades the grid out toward the edges.
 function initDots(host, canvas, ctx) {
   const reduced = prefersReduced();
   const fine = finePointer();
   let W = 0, H = 0, DPR = 1, dots = [], color = '255,255,255';
   let formStart = performance.now();
   const ptr = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
-  const REPEL = 90;
+  const REPEL = 100;
+  const SP = 26; // grid spacing in CSS px
 
   const colors = () => { color = isDark() ? '255,255,255' : '20,20,20'; };
 
-  const sample = () => {
-    const o = document.createElement('canvas');
-    o.width = Math.max(1, Math.round(W)); o.height = Math.max(1, Math.round(H));
-    const oc = o.getContext('2d');
-    oc.fillStyle = '#fff';
-    oc.textAlign = 'center';
-    oc.textBaseline = 'middle';
-    const fs = Math.min(W * 0.46, H * 0.82);
-    oc.font = `800 ${fs}px 'DM Sans', system-ui, sans-serif`;
-    oc.fillText('AK', W / 2, H * 0.5);
-    const data = oc.getImageData(0, 0, o.width, o.height).data;
-    const SP = Math.max(7, Math.round(Math.min(W, H) / 90));
+  const buildField = () => {
+    const cols = Math.ceil(W / SP), rows = Math.ceil(H / SP);
+    const offX = (W - (cols - 1) * SP) / 2; // symmetric margins so edges feel intentional
+    const offY = (H - (rows - 1) * SP) / 2;
     const next = [];
-    for (let y = 0; y < o.height; y += SP) {
-      for (let x = 0; x < o.width; x += SP) {
-        if (data[(y * o.width + x) * 4 + 3] > 128) {
-          // reuse a previous dot's start position when possible for a smooth resize
-          const prev = dots[next.length];
-          next.push({
-            tx: x, ty: y,
-            x: prev ? prev.x : Math.random() * W,
-            y: prev ? prev.y : Math.random() * H,
-          });
-        }
+    let idx = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const prev = dots[idx++];
+        next.push({
+          tx: offX + c * SP, ty: offY + r * SP,
+          x: prev ? prev.x : Math.random() * W,
+          y: prev ? prev.y : Math.random() * H,
+        });
       }
     }
     dots = next;
@@ -564,7 +459,7 @@ function initDots(host, canvas, ctx) {
   const build = (w, h, dpr) => {
     W = w; H = h; DPR = Math.min(dpr, 1.5);
     colors();
-    sample();
+    buildField();
     formStart = performance.now();
     running = false;
     wake();
@@ -574,7 +469,7 @@ function initDots(host, canvas, ctx) {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
     const dark = isDark();
-    const baseA = dark ? 0.16 : 0.2;
+    const baseA = dark ? 0.24 : 0.28;
     for (let i = 0; i < dots.length; i++) {
       const d = dots[i];
       const dx = d.x - ptr.x, dy = d.y - ptr.y, dd = Math.hypot(dx, dy);
@@ -644,7 +539,6 @@ function initDots(host, canvas, ctx) {
 
 const MODES = {
   topo: initTopo,
-  aurora: initAurora,
   magnetic: initMagnetic,
   spotlight: initSpotlight,
   dots: initDots,
