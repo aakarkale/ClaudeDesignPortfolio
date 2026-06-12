@@ -992,40 +992,48 @@ section[data-section="hero"] {
 }
 .lp-toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* iOS gyroscope permission pill — only rendered on touch devices where
-   DeviceOrientationEvent.requestPermission exists (iOS). The 'ask' state
-   pulses subtly so it's findable; once tapped it briefly confirms then
-   dismisses for the session. */
-.gyro-prompt {
-  position: fixed; left: 50%; bottom: 84px;
-  transform: translateX(-50%) translateY(16px);
-  padding: 11px 18px; border-radius: 100px;
-  background: var(--surface-4); color: var(--text-1);
-  border: 1px solid var(--border);
-  font: 600 12px/1 var(--font-body); letter-spacing: 0.01em;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.32);
-  z-index: 990; cursor: pointer;
-  opacity: 0; transition: opacity 320ms ease, transform 320ms cubic-bezier(.2,.8,.2,1);
+/* Right side of the hero meta strip: stacks the SF time indicator and
+   the iOS motion hint into a tight right-aligned column. */
+.hero-meta-right {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: 6px; margin-left: auto;
+}
+
+/* iOS motion-permission hint — rendered only on touch devices where
+   DeviceOrientationEvent.requestPermission exists (iOS). Sits in the
+   meta strip under the SF time, mirroring its mono-caps style so it
+   reads as page furniture rather than a notification. */
+.motion-hint {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent; border: 0; padding: 2px 0;
+  color: var(--text-3);
+  font: 500 10px/1 var(--font-mono);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 700ms ease, color 300ms ease;
   -webkit-tap-highlight-color: transparent;
 }
-.gyro-prompt.on-ask {
-  opacity: 1; transform: translateX(-50%) translateY(0);
-  animation: gyro-pulse 2.4s ease-in-out infinite;
+.motion-hint.on-ask     { opacity: 0.78; }
+.motion-hint.on-ask:active { color: var(--accent); }
+.motion-hint.on-granted { opacity: 1; color: var(--accent); }
+.motion-hint.on-denied  { opacity: 0.5; color: var(--text-4); }
+.motion-hint-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px color-mix(in oklab, var(--accent) 55%, transparent);
+  animation: motion-hint-pulse 1.8s ease-in-out infinite;
 }
-.gyro-prompt.on-granted {
-  opacity: 1; transform: translateX(-50%) translateY(0);
-  color: var(--accent); border-color: color-mix(in oklab, var(--accent) 60%, transparent);
+.motion-hint.on-denied .motion-hint-dot {
+  background: var(--text-4); box-shadow: none; animation: none;
 }
-.gyro-prompt.on-denied {
-  opacity: 0.85; transform: translateX(-50%) translateY(0);
-  color: var(--text-3);
-}
-@keyframes gyro-pulse {
-  0%, 100% { box-shadow: 0 12px 28px rgba(0,0,0,0.32), 0 0 0 0 color-mix(in oklab, var(--accent) 35%, transparent); }
-  50%      { box-shadow: 0 12px 28px rgba(0,0,0,0.32), 0 0 0 12px transparent; }
+@keyframes motion-hint-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.85); }
+  50%      { opacity: 1;    transform: scale(1); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .gyro-prompt.on-ask { animation: none; }
+  .motion-hint-dot { animation: none; }
 }
 
 /* ============================================================

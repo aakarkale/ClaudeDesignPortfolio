@@ -151,13 +151,13 @@ export function CustomCursor({ theme }) {
   );
 }
 
-// ─── Gyro permission prompt (iOS only) ──────────────────────────────
+// ─── Motion hint (iOS only) ─────────────────────────────────────────
 // iOS Safari only honours DeviceOrientationEvent.requestPermission() when
 // it's called synchronously from a click on an actual interactive element
 // — a document-level "first tap anywhere" listener is unreliable. This
-// pill is that explicit element. Android/desktop/reduced-motion never see
-// it. Once the visitor responds (grant or deny) the pill fades out and
-// stays gone for the rest of the session.
+// small mono-caps line in the hero meta strip is that explicit element;
+// it sits in the same visual register as the SF time indicator. Once
+// granted/denied it briefly confirms then dismisses for the session.
 export function GyroPrompt() {
   const [state, setState] = useState('init');
   useEffect(() => {
@@ -167,30 +167,27 @@ export function GyroPrompt() {
     if (window.matchMedia('(pointer: fine)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (sessionStorage.getItem('ak_motion_asked') === '1') return;
-    // Slight delay so the pill arrives after the hero entrance, not during it.
     const t = setTimeout(() => setState('ask'), 1500);
     return () => clearTimeout(t);
   }, [state]);
 
   const onTap = async () => {
-    // Must be inside this click handler synchronously for iOS to consider
-    // it user-activated. Persist the answer for this session so we don't
-    // re-prompt on every scroll-driven re-render of the App tree.
+    // requestPermission must be invoked from inside this click handler
+    // for iOS to treat it as user-activated.
     let result = 'denied';
     try { result = await DeviceOrientationEvent.requestPermission(); } catch (e) {}
     try { sessionStorage.setItem('ak_motion_asked', '1'); } catch (e) {}
     setState(result === 'granted' ? 'granted' : 'denied');
-    setTimeout(() => setState('hidden'), result === 'granted' ? 1400 : 2200);
+    setTimeout(() => setState('hidden'), result === 'granted' ? 1400 : 1800);
   };
 
   if (state === 'init' || state === 'hidden') return null;
-  const label = state === 'granted'
-    ? '✓ Motion enabled · tilt your phone'
-    : state === 'denied'
-    ? 'Motion permission denied'
-    : 'Tilt to interact · Tap to enable';
+  const label = state === 'granted' ? 'motion on'
+    : state === 'denied'             ? 'motion off'
+    :                                  'tilt · tap';
   return (
-    <button className={`gyro-prompt on-${state}`} onClick={onTap} aria-label={label}>
+    <button className={`motion-hint on-${state}`} onClick={onTap} aria-label={label}>
+      <span className="motion-hint-dot" aria-hidden="true" />
       {label}
     </button>
   );
@@ -294,8 +291,11 @@ export function Hero({ theme, data, heroMode }) {
       <div className="hero-wrap">
         <div className="hero-meta reveal">
           <div className="eyebrow">Available for the right problem</div>
-          <div className="hero-time">
-            <span className="live-dot" /> SF · {sfTime}
+          <div className="hero-meta-right">
+            <div className="hero-time">
+              <span className="live-dot" /> SF · {sfTime}
+            </div>
+            <GyroPrompt />
           </div>
         </div>
 

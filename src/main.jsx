@@ -5,7 +5,7 @@ import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import { createRoot } from 'react-dom/client';
 
 import { AK_DATA } from './data.js';
-import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer, GyroPrompt } from './chrome.jsx';
+import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer } from './chrome.jsx';
 import { HERO_MODES } from './hero-modes.js';
 import { About, Work, Experience, Skills, TechReel, Contact } from './sections.jsx';
 import { initMotion } from './motion.js';
@@ -165,7 +165,6 @@ function App() {
       <div className={`lp-toast ${lpToast ? 'on' : ''}`}>
         {lpToast || 'Hi there 👋'}
       </div>
-      <GyroPrompt />
     </>
   );
 }
