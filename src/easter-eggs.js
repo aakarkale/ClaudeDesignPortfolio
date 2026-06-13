@@ -247,8 +247,9 @@
     setTimeout(tryInit, 800);
   }
 
-  // ─── 4. Footer "AK." 5× → particle explosion ─────────────────────
+  // ─── 4. Footer "AK." 5× → particle explosion (desktop only) ──────
   function initFooterSig() {
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
     let clicks=0, timer;
     document.addEventListener('click', e=>{
       if (!e.target.closest('.footer-sig')) return;
@@ -261,29 +262,9 @@
     });
   }
 
-  // ─── 6. Shake (mobile) → rainbow ripple ──────────────────────────
-  function initShake() {
-    if (!window.DeviceMotionEvent) return;
-    let last={x:0,y:0,z:0}, lastTime=0;
-    window.addEventListener('devicemotion', e=>{
-      const acc=e.accelerationIncludingGravity; if (!acc) return;
-      const now=Date.now(); if (now-lastTime<800) return;
-      if (Math.abs(acc.x-last.x)+Math.abs(acc.y-last.y)+Math.abs(acc.z-last.z)>28) {
-        lastTime=now;
-        const ring=document.createElement('div');
-        ring.style.cssText=`position:fixed;inset:0;pointer-events:none;z-index:9985;background:conic-gradient(from 0deg,#ff006e,#fb5607,#ffbe0b,#8338ec,#3a86ff,#ff006e);opacity:0;transition:opacity 250ms;mix-blend-mode:${getTheme()==='dark'?'screen':'multiply'};`;
-        document.body.appendChild(ring);
-        requestAnimationFrame(()=>ring.style.opacity='.35');
-        setTimeout(()=>{ ring.style.opacity='0'; setTimeout(()=>ring.remove(),300); },400);
-        confettiBurst(window.innerWidth/2,window.innerHeight/2,50);
-        showToast('🌈 Rainbow shake!',{duration:1600});
-      }
-      last={x:acc.x,y:acc.y,z:acc.z};
-    });
-  }
-
-  // ─── 8. Click all stats in order → achievement ───────────────────
+  // ─── 8. Click all stats in order → achievement (desktop only) ────
   function initStatAchievement() {
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
     let seq=[];
     document.addEventListener('click', e=>{
       const stat=e.target.closest('.stat'); if (!stat) { if (!e.target.closest('.about-stats-grid')) { seq=[]; document.querySelectorAll('.stat').forEach(s=>s.style.borderColor=''); } return; }
@@ -340,28 +321,6 @@
         }, i*150);
         showToast('⭐ Shoot for the stars!',{duration:2000});
       }
-    },{passive:true});
-  }
-
-  // M3. Long-press project card → behind the scenes
-  function initMobileCardLongPress() {
-    const msgs=['🔧 Built with late nights and cold coffee.','💡 This idea came from a shower thought.','🚀 Shipped in a weekend hackathon.','🐛 This one had 47 bugs before launch.','❤️ My personal favorite project.'];
-    let pressTimer, pressIdx=0;
-    document.addEventListener('touchstart', e=>{
-      const card=e.target.closest('.proj-card,.wc-card'); if (!card) return;
-      pressTimer=setTimeout(()=>{ const theme=getTheme(); confettiBurst(e.touches[0].clientX,e.touches[0].clientY,30); showToast(msgs[pressIdx++%msgs.length],{duration:3000,bg:theme==='dark'?'#1f1f1f':'#fff',color:theme==='dark'?'#fff':'#000'}); },600);
-    },{passive:true});
-    ['touchend','touchcancel','touchmove'].forEach(ev=>document.addEventListener(ev,()=>clearTimeout(pressTimer),{passive:true}));
-  }
-
-  // M4. Swipe right on hero → open to work
-  function initMobileSwipeRight() {
-    let startX=null;
-    document.addEventListener('touchstart', e=>{ if (e.touches.length===1&&window.scrollY<80) startX=e.touches[0].clientX; },{passive:true});
-    document.addEventListener('touchend', e=>{
-      if (startX===null) return;
-      const dx=e.changedTouches[0].clientX-startX; startX=null;
-      if (dx>120) showToast('🟢 Open to the right opportunities — say hi!',{duration:3200,bg:'rgb(4,196,10)',color:'#000'});
     },{passive:true});
   }
 
@@ -432,16 +391,13 @@
     initTypeYay();
     initHeroQuote();
     initFooterSig();
-    initShake();
     initStatAchievement();
     initMobilePinch();
     initMobileSwipeUpStar();
-    initMobileCardLongPress();
-    initMobileSwipeRight();
     initEggHints();
     window.__confettiBurst = confettiBurst;
     window.__showToast = showToast;
-    console.log('%c🥚 10 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
+    console.log('%c🥚 7 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
   };
 
 })();
