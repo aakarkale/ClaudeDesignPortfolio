@@ -39,6 +39,14 @@ section[data-section="hero"] {
   .hero-topo { animation: none; }
 }
 
+/* Labyrinth corridors run right along the section's outer ring — the
+   default edge fade would swallow them, so this mode keeps a wide
+   plateau and only feathers the last few percent. */
+section[data-hero-mode="labyrinth"] .hero-backdrop {
+  -webkit-mask-image: radial-gradient(150% 150% at 50% 45%, black 80%, transparent 100%);
+  mask-image: radial-gradient(150% 150% at 50% 45%, black 80%, transparent 100%);
+}
+
 .hero-wrap {
   position: relative;
   z-index: 1;

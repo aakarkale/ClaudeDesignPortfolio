@@ -1,5 +1,5 @@
 // ====================================================================
-// Hero FX — four swappable backdrop "experiences" for the hero section.
+// Hero FX — five swappable backdrop "experiences" for the hero section.
 // The site advances to the next one on every page load (position kept in
 // localStorage — see main.jsx). Each mode is a self-contained initializer
 // that owns its own canvas drawing, listeners, observers and rAF loop,
@@ -9,6 +9,7 @@
 //   dots      — a dot-matrix field across the hero; cursor scatters it
 //   topo      — topographic contour field, cursor repels the lines
 //   spotlight — dark hero; cursor is a soft light revealing texture
+//   labyrinth — faint tilt-maze built around the copy; sink the ball
 //   magnetic  — title letters are pulled toward the cursor (kinetic type)
 //
 // Everything degrades gracefully: prefers-reduced-motion paints one calm
@@ -17,13 +18,15 @@
 // when present, falls back to inline transforms otherwise).
 // ====================================================================
 
-// Per-refresh cycle order: dots → topo → spotlight → magnetic → (repeat).
-export const HERO_MODES = ['dots', 'topo', 'spotlight', 'magnetic'];
+// Per-refresh cycle order:
+// dots → topo → spotlight → labyrinth → magnetic → (repeat).
+export const HERO_MODES = ['dots', 'topo', 'spotlight', 'labyrinth', 'magnetic'];
 export const HERO_LABELS = {
   topo: 'Topographic',
   magnetic: 'Magnetic Type',
   spotlight: 'Spotlight',
   dots: 'Dot Matrix',
+  labyrinth: 'Labyrinth',
 };
 
 // ── Shared helpers ────────────────────────────────────────────────────
@@ -667,11 +670,492 @@ function initDots(host, canvas, ctx) {
   };
 }
 
+// ── Mode 5: LABYRINTH ─────────────────────────────────────────────────
+// A faint tilt-maze that builds itself AROUND the hero copy — never
+// behind it. The grid samples the real DOM rects of the text blocks and
+// refuses to place cells there, so the corridors flow around the title
+// like a moat. Steering: on mobile the device gyroscope tilts the board
+// (same deviceorientation feed as the other modes, ambientDriver's
+// Lissajous fallback rolls the ball ambiently when no sensor / no
+// permission); on desktop the board tilts toward the cursor. Sink the
+// ball into the ringed hole to win — a tiny celebration, then the maze
+// quietly deals a new layout. Reduced motion: one calm static frame.
+function initLabyrinth(host, canvas, ctx) {
+  const reduced = prefersReduced();
+  const fine = finePointer();
+
+  let W = 0, H = 0, DPR = 1;
+
+  // Board: cell grid + shared edge arrays (1 = solid wall).
+  // edgeV[(cols+1)×rows] are vertical edges, edgeH[cols×(rows+1)] horizontal.
+  let cell = 48, cols = 0, rows = 0, offX = 0, offY = 0;
+  let openC = new Uint8Array(0);
+  let edgeV = new Uint8Array(0), edgeH = new Uint8Array(0);
+  let segs = new Float32Array(0);   // drawn segments, for the near-ball tint
+  let wallLayer = null;             // offscreen prerender of the resting maze
+  let playable = false;
+  let start = { x: 0, y: 0 }, hole = { x: 0, y: 0 };
+  let wins = 0;
+
+  const ball = { x: 0, y: 0, vx: 0, vy: 0, r: 7 };
+  const tilt = { x: 0, y: 0, tx: 0, ty: 0 };
+  let sink = null;                  // { t0 } while the ball drops in
+  let trail = [];
+  let moved = 0;                    // total distance rolled — retires the hint
+  const bornAt = performance.now();
+
+  const idx = (i, j) => j * cols + i;
+  const isOpen = (i, j) => i >= 0 && j >= 0 && i < cols && j < rows && openC[idx(i, j)] === 1;
+
+  // Cells whose core overlaps any hero text are blocked. Rects come from
+  // Range.getClientRects() — tight per-line glyph boxes, not full-width
+  // block boxes — so the maze reclaims the empty space beside short
+  // lines and genuinely hugs the copy. Flex rows (meta, CTAs) measure
+  // each child so their gaps stay playable too. The core test (cell
+  // inset 25%) keeps slivers usable while the PAD inflation still
+  // guarantees a clear moat around the actual glyphs.
+  let topSafe = 0; // y below the fixed topbar — keep ball/hole out of it
+  const measureBlocked = () => {
+    const PAD = fine ? 22 : 14;
+    const hostR = host.getBoundingClientRect();
+    const section = host.closest('section') || document;
+    const ex = [];
+    const pushTight = (el) => {
+      let list = [];
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        list = Array.from(range.getClientRects()).filter((r) => r.width > 6 && r.height > 6);
+      } catch (e) {}
+      if (!list.length) list = [el.getBoundingClientRect()];
+      for (const r of list) {
+        if (!r.width || !r.height) continue;
+        ex.push({
+          l: r.left - hostR.left - PAD, t: r.top - hostR.top - PAD,
+          r: r.right - hostR.left + PAD, b: r.bottom - hostR.top + PAD,
+        });
+      }
+    };
+    for (const sel of ['.hero-meta', '.hero-title', '.hero-sub', '.hero-actions', '.hero-scroll']) {
+      section.querySelectorAll(sel).forEach((el) => {
+        const flex = /flex/.test(getComputedStyle(el).display);
+        if (flex && el.children.length) {
+          for (const child of el.children) pushTight(child);
+        } else {
+          pushTight(el);
+        }
+      });
+    }
+    const bar = document.querySelector('.topbar');
+    topSafe = bar ? Math.max(0, bar.getBoundingClientRect().bottom - hostR.top + 6) : 0;
+    openC = new Uint8Array(cols * rows);
+    const inset = cell * 0.25;
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        const cl = offX + i * cell + inset, ct = offY + j * cell + inset;
+        const cr = cl + cell - inset * 2, cb = ct + cell - inset * 2;
+        let blocked = false;
+        for (const e of ex) {
+          if (cl < e.r && cr > e.l && ct < e.b && cb > e.t) { blocked = true; break; }
+        }
+        openC[idx(i, j)] = blocked ? 0 : 1;
+      }
+    }
+  };
+
+  // Iterative DFS backtracker, run over every open component so each
+  // pocket of free space mazifies. Then ~10% of the remaining internal
+  // walls are knocked out ("braiding") — a few loops keep the board airy
+  // and the ball from feeling trapped in dead ends.
+  const carve = () => {
+    edgeV = new Uint8Array((cols + 1) * rows);
+    edgeH = new Uint8Array(cols * (rows + 1));
+    for (let j = 0; j < rows; j++)
+      for (let i = 0; i <= cols; i++)
+        edgeV[j * (cols + 1) + i] = (isOpen(i - 1, j) || isOpen(i, j)) ? 1 : 0;
+    for (let j = 0; j <= rows; j++)
+      for (let i = 0; i < cols; i++)
+        edgeH[j * cols + i] = (isOpen(i, j - 1) || isOpen(i, j)) ? 1 : 0;
+
+    const visited = new Uint8Array(cols * rows);
+    const comp = new Int32Array(cols * rows).fill(-1);
+    const compSize = [];
+    const stack = [];
+    const carveFrom = (s, id) => {
+      visited[s] = 1; comp[s] = id; compSize[id] = 1;
+      stack.length = 0; stack.push(s);
+      while (stack.length) {
+        const c = stack[stack.length - 1];
+        const ci = c % cols, cj = (c / cols) | 0;
+        const cand = [];
+        if (isOpen(ci, cj - 1) && !visited[c - cols]) cand.push(0);
+        if (isOpen(ci + 1, cj) && !visited[c + 1]) cand.push(1);
+        if (isOpen(ci, cj + 1) && !visited[c + cols]) cand.push(2);
+        if (isOpen(ci - 1, cj) && !visited[c - 1]) cand.push(3);
+        if (!cand.length) { stack.pop(); continue; }
+        const dir = cand[(Math.random() * cand.length) | 0];
+        let n = c;
+        if (dir === 0) { edgeH[cj * cols + ci] = 0; n = c - cols; }
+        if (dir === 1) { edgeV[cj * (cols + 1) + ci + 1] = 0; n = c + 1; }
+        if (dir === 2) { edgeH[(cj + 1) * cols + ci] = 0; n = c + cols; }
+        if (dir === 3) { edgeV[cj * (cols + 1) + ci] = 0; n = c - 1; }
+        visited[n] = 1; comp[n] = id; compSize[id]++;
+        stack.push(n);
+      }
+    };
+    let nComp = 0;
+    for (let c = 0; c < cols * rows; c++) {
+      if (openC[c] && !visited[c]) carveFrom(c, nComp++);
+    }
+    for (let j = 0; j < rows; j++)
+      for (let i = 1; i < cols; i++)
+        if (isOpen(i - 1, j) && isOpen(i, j) && edgeV[j * (cols + 1) + i] && Math.random() < 0.10)
+          edgeV[j * (cols + 1) + i] = 0;
+    for (let j = 1; j < rows; j++)
+      for (let i = 0; i < cols; i++)
+        if (isOpen(i, j - 1) && isOpen(i, j) && edgeH[j * cols + i] && Math.random() < 0.10)
+          edgeH[j * cols + i] = 0;
+    return { comp, compSize };
+  };
+
+  // Start/goal = the two ends of (approximately) the longest corridor in
+  // the largest component — classic double-BFS diameter. On desktop that
+  // path naturally wraps around the copy; on phones it winds through the
+  // biggest free band.
+  const passable = (c, dir) => {
+    const ci = c % cols, cj = (c / cols) | 0;
+    if (dir === 0) return cj > 0 && !edgeH[cj * cols + ci];
+    if (dir === 1) return ci < cols - 1 && !edgeV[cj * (cols + 1) + ci + 1];
+    if (dir === 2) return cj < rows - 1 && !edgeH[(cj + 1) * cols + ci];
+    return ci > 0 && !edgeV[cj * (cols + 1) + ci];
+  };
+  // Farthest cell by corridor distance — preferring cells that aren't
+  // tucked under the fixed topbar, so the ball and the hole never hide
+  // behind chrome. Falls back to the absolute farthest if everything
+  // reachable sits in that strip.
+  const bfsFar = (src) => {
+    const dist = new Int32Array(cols * rows).fill(-1);
+    const q = [src]; dist[src] = 0;
+    let far = src, farPref = -1, farPrefD = -1;
+    for (let h = 0; h < q.length; h++) {
+      const c = q[h];
+      if (dist[c] > dist[far]) far = c;
+      const cy = offY + ((c / cols) | 0) * cell + cell / 2;
+      if (cy > topSafe && dist[c] > farPrefD) { farPrefD = dist[c]; farPref = c; }
+      const nb = [c - cols, c + 1, c + cols, c - 1];
+      for (let d = 0; d < 4; d++) {
+        const n = nb[d];
+        if (passable(c, d) && openC[n] && dist[n] === -1) { dist[n] = dist[c] + 1; q.push(n); }
+      }
+    }
+    return farPref >= 0 ? farPref : far;
+  };
+
+  const cellCenter = (c) => ({
+    x: offX + (c % cols) * cell + cell / 2,
+    y: offY + ((c / cols) | 0) * cell + cell / 2,
+  });
+
+  const renderWalls = () => {
+    wallLayer = wallLayer || document.createElement('canvas');
+    wallLayer.width = Math.round(W * DPR);
+    wallLayer.height = Math.round(H * DPR);
+    const w = wallLayer.getContext('2d');
+    w.setTransform(DPR, 0, 0, DPR, 0, 0);
+    w.clearRect(0, 0, W, H);
+    w.strokeStyle = isDark() ? 'rgba(255,255,255,0.10)' : 'rgba(20,20,20,0.12)';
+    w.lineWidth = 1;
+    w.lineCap = 'round';
+    w.beginPath();
+    const S = [];
+    for (let j = 0; j < rows; j++)
+      for (let i = 0; i <= cols; i++)
+        if (edgeV[j * (cols + 1) + i]) {
+          const x = offX + i * cell, y = offY + j * cell;
+          w.moveTo(x, y); w.lineTo(x, y + cell);
+          S.push(x, y, x, y + cell);
+        }
+    for (let j = 0; j <= rows; j++)
+      for (let i = 0; i < cols; i++)
+        if (edgeH[j * cols + i]) {
+          const x = offX + i * cell, y = offY + j * cell;
+          w.moveTo(x, y); w.lineTo(x + cell, y);
+          S.push(x, y, x + cell, y);
+        }
+    w.stroke();
+    segs = new Float32Array(S);
+  };
+
+  const buildBoard = () => {
+    measureBlocked();
+    const { comp, compSize } = carve();
+    let big = -1, bigSize = 0;
+    for (let id = 0; id < compSize.length; id++)
+      if (compSize[id] > bigSize) { bigSize = compSize[id]; big = id; }
+    playable = bigSize >= 8 && !reduced;
+    if (big >= 0) {
+      let seed = -1;
+      for (let c = 0; c < cols * rows; c++) if (comp[c] === big) { seed = c; break; }
+      const a = bfsFar(seed);
+      const b = bfsFar(a);
+      start = cellCenter(a);
+      hole = cellCenter(b);
+    }
+    ball.x = start.x; ball.y = start.y;
+    ball.vx = ball.vy = 0;
+    ball.r = Math.max(4.5, cell * 0.16);
+    trail.length = 0;
+    sink = null;
+    renderWalls();
+  };
+
+  const build = (w, h, dpr) => {
+    W = w; H = h; DPR = Math.min(dpr, 1.5);
+    cell = fine ? Math.max(46, Math.min(60, Math.round(Math.min(W, H) / 11))) : 36;
+    cols = Math.max(4, Math.floor((W - 10) / cell));
+    rows = Math.max(4, Math.floor((H - 10) / cell));
+    offX = (W - cols * cell) / 2;
+    offY = (H - rows * cell) / 2;
+    buildBoard();
+    draw(performance.now());
+  };
+
+  // ── Physics ──
+  // The board "tilts" toward the pointer (desktop cursor, or the gyro /
+  // Lissajous virtual pointer on mobile); the ball accelerates down the
+  // tilt, with rolling friction and soft wall bounces. Sub-stepped so a
+  // fast roll can't tunnel through a 1px wall.
+  const collideAxis = (axis) => {
+    const ci = Math.max(0, Math.min(cols - 1, Math.floor((ball.x - offX) / cell)));
+    const cj = Math.max(0, Math.min(rows - 1, Math.floor((ball.y - offY) / cell)));
+    const L = offX + ci * cell, T = offY + cj * cell;
+    const REST = -0.32;
+    if (axis === 'x') {
+      if (edgeV[cj * (cols + 1) + ci] && ball.x - ball.r < L) { ball.x = L + ball.r; ball.vx *= REST; }
+      if (edgeV[cj * (cols + 1) + ci + 1] && ball.x + ball.r > L + cell) { ball.x = L + cell - ball.r; ball.vx *= REST; }
+    } else {
+      if (edgeH[cj * cols + ci] && ball.y - ball.r < T) { ball.y = T + ball.r; ball.vy *= REST; }
+      if (edgeH[(cj + 1) * cols + ci] && ball.y + ball.r > T + cell) { ball.y = T + cell - ball.r; ball.vy *= REST; }
+    }
+  };
+  // Wall ends ("posts") at the four lattice corners of the current cell —
+  // without these the ball clips corners diagonally through open gaps.
+  const collidePosts = () => {
+    const ci = Math.max(0, Math.min(cols - 1, Math.floor((ball.x - offX) / cell)));
+    const cj = Math.max(0, Math.min(rows - 1, Math.floor((ball.y - offY) / cell)));
+    for (let pj = cj; pj <= cj + 1; pj++) {
+      for (let pi = ci; pi <= ci + 1; pi++) {
+        const hasWall =
+          (pj > 0 && edgeV[(pj - 1) * (cols + 1) + pi]) ||
+          (pj < rows && edgeV[pj * (cols + 1) + pi]) ||
+          (pi > 0 && edgeH[pj * cols + pi - 1]) ||
+          (pi < cols && edgeH[pj * cols + pi]);
+        if (!hasWall) continue;
+        const px = offX + pi * cell, py = offY + pj * cell;
+        const dx = ball.x - px, dy = ball.y - py;
+        const rr = ball.r + 1.2;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < rr * rr && d2 > 1e-4) {
+          const d = Math.sqrt(d2);
+          ball.x = px + (dx / d) * rr;
+          ball.y = py + (dy / d) * rr;
+          const vn = (ball.vx * dx + ball.vy * dy) / d;
+          if (vn < 0) { ball.vx -= ((vn * dx) / d) * 1.32; ball.vy -= ((vn * dy) / d) * 1.32; }
+        }
+      }
+    }
+  };
+
+  let last = 0;
+  const step = (now) => {
+    if (!last) last = now;
+    const dt = Math.min((now - last) / 1000, 0.033);
+    last = now;
+    if (!playable) return;
+    if (sink) {
+      if (now - sink.t0 > 1500) buildBoard(); // quietly deal a new maze
+      return;
+    }
+    tilt.x += (tilt.tx - tilt.x) * 0.10;
+    tilt.y += (tilt.ty - tilt.y) * 0.10;
+    const G = 1500;
+    ball.vx += tilt.x * G * dt;
+    ball.vy += tilt.y * G * dt;
+    const f = Math.exp(-2.1 * dt);
+    ball.vx *= f; ball.vy *= f;
+    const sp = Math.hypot(ball.vx, ball.vy), MAX = 620;
+    if (sp > MAX) { ball.vx *= MAX / sp; ball.vy *= MAX / sp; }
+    const steps = Math.max(1, Math.ceil((Math.max(Math.abs(ball.vx), Math.abs(ball.vy)) * dt) / (ball.r * 0.8)));
+    for (let s = 0; s < steps; s++) {
+      ball.x += (ball.vx * dt) / steps; collideAxis('x');
+      ball.y += (ball.vy * dt) / steps; collideAxis('y');
+      collidePosts();
+    }
+    moved += sp * dt;
+    if (sp > 30) {
+      trail.push({ x: ball.x, y: ball.y });
+      if (trail.length > 9) trail.shift();
+    }
+    if (Math.hypot(ball.x - hole.x, ball.y - hole.y) < cell * 0.30 * 0.62) {
+      sink = { t0: now, fx: ball.x, fy: ball.y };
+      wins++;
+      // Success haptic (Android; iOS Safari no-ops) + a tiny confetti
+      // nod from the easter-egg helper when it's loaded.
+      if (!fine && typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate([16, 60, 22]); } catch (e) {}
+      }
+      const hr = host.getBoundingClientRect();
+      if (window.__confettiBurst) window.__confettiBurst(hr.left + hole.x, hr.top + hole.y, 14);
+    }
+  };
+
+  // ── Drawing ──
+  const draw = (now) => {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    if (wallLayer) ctx.drawImage(wallLayer, 0, 0, W, H);
+    const dark = isDark();
+    const [ar, ag, ab] = rgbOf('--accent', [255, 221, 85]);
+
+    // Walls within reach of the ball warm toward the accent — the same
+    // "the pointer carries a glow" language as the dots grid.
+    if (playable) {
+      const REACH = cell * 2.2;
+      ctx.lineWidth = 1.1;
+      ctx.lineCap = 'round';
+      for (let k = 0; k < segs.length; k += 4) {
+        const mx = (segs[k] + segs[k + 2]) / 2, my = (segs[k + 1] + segs[k + 3]) / 2;
+        const d = Math.hypot(mx - ball.x, my - ball.y);
+        if (d > REACH) continue;
+        const t = 1 - d / REACH;
+        ctx.strokeStyle = `rgba(${ar},${ag},${ab},${t * t * 0.30})`;
+        ctx.beginPath();
+        ctx.moveTo(segs[k], segs[k + 1]);
+        ctx.lineTo(segs[k + 2], segs[k + 3]);
+        ctx.stroke();
+      }
+    }
+
+    if (playable || reduced) {
+      // Hole: a recessed disc with a softly breathing accent ring.
+      const R = cell * 0.30;
+      const g = ctx.createRadialGradient(hole.x, hole.y, 0, hole.x, hole.y, R);
+      g.addColorStop(0, dark ? 'rgba(0,0,0,0.60)' : 'rgba(20,20,20,0.16)');
+      g.addColorStop(0.75, dark ? 'rgba(0,0,0,0.35)' : 'rgba(20,20,20,0.10)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(hole.x, hole.y, R, 0, Math.PI * 2); ctx.fill();
+      const k = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(now / 700);
+      ctx.strokeStyle = `rgba(${ar},${ag},${ab},${0.26 + k * 0.18})`;
+      ctx.lineWidth = 1.25;
+      ctx.beginPath(); ctx.arc(hole.x, hole.y, R * (0.76 + k * 0.10), 0, Math.PI * 2); ctx.stroke();
+
+      // Ball (with sink animation: it slides into the hole and shrinks).
+      let bx = ball.x, by = ball.y, br = ball.r, ba = 0.92;
+      if (sink) {
+        const sk = Math.min(1, (now - sink.t0) / 450);
+        bx = sink.fx + (hole.x - sink.fx) * sk;
+        by = sink.fy + (hole.y - sink.fy) * sk;
+        br = ball.r * (1 - sk * 0.92);
+        ba = 0.92 * (1 - sk * 0.5);
+        const ringR = cell * (0.3 + sk * 1.25);
+        ctx.strokeStyle = `rgba(${ar},${ag},${ab},${(1 - sk) * 0.45})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(hole.x, hole.y, ringR, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = dark ? `rgba(255,255,255,${(1 - sk) * 0.5})` : `rgba(20,20,20,${(1 - sk) * 0.55})`;
+        ctx.font = '600 10px Geist, ui-monospace, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('S O L V E D', hole.x, hole.y - cell * 0.62);
+      } else {
+        for (let i = 0; i < trail.length; i++) {
+          const tp = trail[i];
+          ctx.fillStyle = `rgba(${ar},${ag},${ab},${(i / trail.length) * 0.10})`;
+          ctx.beginPath(); ctx.arc(tp.x, tp.y, br * 0.5, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      const glow = ctx.createRadialGradient(bx, by, 0, bx, by, br * 3.4);
+      glow.addColorStop(0, `rgba(${ar},${ag},${ab},0.16)`);
+      glow.addColorStop(1, `rgba(${ar},${ag},${ab},0)`);
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(bx, by, br * 3.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = `rgba(${ar},${ag},${ab},${ba})`;
+      ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+
+      // One-time hint near the starting ball, in the site's mono caption
+      // voice. Fades on its own or once the ball has really rolled.
+      if (!reduced && wins === 0 && !sink) {
+        const age = (now - bornAt) / 1000;
+        const a = Math.min(1, Math.max(0, 1 - Math.max(0, age - 8) / 1.6)) * Math.max(0, 1 - moved / 900);
+        if (a > 0.02) {
+          ctx.fillStyle = dark ? `rgba(255,255,255,${a * 0.38})` : `rgba(20,20,20,${a * 0.42})`;
+          ctx.font = '600 10px Geist, ui-monospace, monospace';
+          ctx.textAlign = 'center';
+          const label = fine ? 'S T E E R · S I N K  T H E  B A L L' : 'T I L T · S I N K  T H E  B A L L';
+          // Clamp inside the canvas — start cells often hug a border.
+          const tw = ctx.measureText(label).width;
+          const hx = Math.max(tw / 2 + 6, Math.min(W - tw / 2 - 6, start.x));
+          let hy = start.y - cell * 0.62 > topSafe + 12 ? start.y - cell * 0.62 : start.y + cell * 0.78;
+          hy = Math.min(hy, H - 10);
+          ctx.fillText(label, hx, hy);
+        }
+      }
+    }
+  };
+
+  const frame = (now) => { step(now); draw(now); };
+
+  // ── Input ──
+  // Pointer offset from the hero centre = board tilt (−1..1 each axis,
+  // small deadzone so a parked cursor reads as a level board).
+  const onMove = (e) => {
+    const r = host.getBoundingClientRect();
+    const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+    const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
+    const sx = Math.max(-1, Math.min(1, nx));
+    const sy = Math.max(-1, Math.min(1, ny));
+    tilt.tx = Math.abs(sx) < 0.05 ? 0 : sx;
+    tilt.ty = Math.abs(sy) < 0.05 ? 0 : sy;
+  };
+  const onLeave = () => { tilt.tx = 0; tilt.ty = 0; };
+
+  const stopSize = observeSize(host, canvas, build, 1.5);
+  const stopTheme = observeTheme(() => { renderWalls(); draw(performance.now()); });
+  // The entrance animation translates the text blocks; remeasure once it
+  // settles so the moat hugs the true resting layout.
+  const stopReady = whenHeroReady(() => { if (W && H) { buildBoard(); draw(performance.now()); } });
+
+  let stopLoop = () => {};
+  let stopAmbient = () => {};
+  if (!reduced) {
+    stopLoop = loopWhileVisible(host, frame);
+    if (fine) {
+      window.addEventListener('mousemove', onMove, { passive: true });
+      document.documentElement.addEventListener('mouseleave', onLeave);
+    } else {
+      stopAmbient = ambientDriver(host, onMove);
+    }
+  }
+
+  // Test hook for headless verification (state peek + ball warp).
+  window.__heroLab = {
+    state: () => ({ x: ball.x, y: ball.y, hole: { ...hole }, start: { ...start }, wins, cols, rows, cell, playable }),
+    warp: (x, y) => { ball.x = x; ball.y = y; ball.vx = ball.vy = 0; },
+  };
+
+  return () => {
+    stopLoop(); stopAmbient(); stopSize(); stopTheme(); stopReady();
+    window.removeEventListener('mousemove', onMove);
+    document.documentElement.removeEventListener('mouseleave', onLeave);
+    delete window.__heroLab;
+  };
+}
+
 const MODES = {
   topo: initTopo,
   magnetic: initMagnetic,
   spotlight: initSpotlight,
   dots: initDots,
+  labyrinth: initLabyrinth,
 };
 
 // ── Controller ────────────────────────────────────────────────────────
