@@ -261,27 +261,6 @@
     });
   }
 
-  // ─── 6. Shake (mobile) → rainbow ripple ──────────────────────────
-  function initShake() {
-    if (!window.DeviceMotionEvent) return;
-    let last={x:0,y:0,z:0}, lastTime=0;
-    window.addEventListener('devicemotion', e=>{
-      const acc=e.accelerationIncludingGravity; if (!acc) return;
-      const now=Date.now(); if (now-lastTime<800) return;
-      if (Math.abs(acc.x-last.x)+Math.abs(acc.y-last.y)+Math.abs(acc.z-last.z)>28) {
-        lastTime=now;
-        const ring=document.createElement('div');
-        ring.style.cssText=`position:fixed;inset:0;pointer-events:none;z-index:9985;background:conic-gradient(from 0deg,#ff006e,#fb5607,#ffbe0b,#8338ec,#3a86ff,#ff006e);opacity:0;transition:opacity 250ms;mix-blend-mode:${getTheme()==='dark'?'screen':'multiply'};`;
-        document.body.appendChild(ring);
-        requestAnimationFrame(()=>ring.style.opacity='.35');
-        setTimeout(()=>{ ring.style.opacity='0'; setTimeout(()=>ring.remove(),300); },400);
-        confettiBurst(window.innerWidth/2,window.innerHeight/2,50);
-        showToast('🌈 Rainbow shake!',{duration:1600});
-      }
-      last={x:acc.x,y:acc.y,z:acc.z};
-    });
-  }
-
   // ─── 8. Click all stats in order → achievement ───────────────────
   function initStatAchievement() {
     let seq=[];
@@ -432,7 +411,6 @@
     initTypeYay();
     initHeroQuote();
     initFooterSig();
-    initShake();
     initStatAchievement();
     initMobilePinch();
     initMobileSwipeUpStar();
@@ -441,7 +419,7 @@
     initEggHints();
     window.__confettiBurst = confettiBurst;
     window.__showToast = showToast;
-    console.log('%c🥚 10 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
+    console.log('%c🥚 9 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
   };
 
 })();
