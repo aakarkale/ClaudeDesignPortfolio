@@ -1057,9 +1057,10 @@ function initLabyrinth(host, canvas, ctx) {
       if (now - sink.t0 > 1500) buildBoard(); // quietly deal a new maze
       return;
     }
-    // Desktop plays itself whenever the cursor is idle; moving the cursor
-    // hands control back (onMove sets tilt + lastPointerAt) for ~2.5s.
-    // Mobile keeps the gyro/Lissajous virtual pointer via onMove, untouched.
+    // Desktop plays itself until the player catches the ball with the
+    // cursor; onMove then sets tilt + lastPointerAt and holds manual
+    // control until ~1.5s after the last move. Mobile keeps the
+    // gyro/Lissajous virtual pointer via onMove, untouched.
     //
     // Two control models: hand/gyro play accelerates a momentum ball down
     // the tilt; the autopilot steers the velocity vector straight at the
@@ -1068,7 +1069,7 @@ function initLabyrinth(host, canvas, ctx) {
     // braided pockets — it tracks the corridor deterministically while the
     // wall collisions below still constrain it.
     autoActive = false;
-    if (fine && now - lastPointerAt > 2500) { autoActive = true; driveAuto(dt); }
+    if (fine && now - lastPointerAt > 1500) { autoActive = true; driveAuto(dt); }
     if (!autoActive) {
       tilt.x += (tilt.tx - tilt.x) * 0.13;
       tilt.y += (tilt.ty - tilt.y) * 0.13;
@@ -1214,16 +1215,21 @@ function initLabyrinth(host, canvas, ctx) {
   // Pointer offset from the hero centre = board tilt (−1..1 each axis,
   // small deadzone so a parked cursor reads as a level board).
   const onMove = (e) => {
-    // A real cursor move (fine pointer) hands control to the player and
-    // pauses the desktop autopilot for ~2.5s. On mobile this is the
-    // ambient virtual pointer, where lastPointerAt is moot (autopilot is
-    // desktop-only) but harmless.
-    if (fine) lastPointerAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
     const r = host.getBoundingClientRect();
-    const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
-    const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
-    const sx = Math.max(-1, Math.min(1, nx));
-    const sy = Math.max(-1, Math.min(1, ny));
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    // Desktop: the autopilot keeps the ball rolling until the cursor is
+    // placed ON the ball — only then does the player "grab" it. Once
+    // grabbed, any continued movement keeps manual control alive; ~1.5s
+    // after the last move the autopilot resumes. (Mobile has no cursor —
+    // this is the ambient virtual pointer, which always steers.)
+    if (fine) {
+      const t = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const engaged = t - lastPointerAt < 1500;
+      if (!engaged && Math.hypot(px - ball.x, py - ball.y) > ball.r + cell * 0.5) return;
+      lastPointerAt = t;
+    }
+    const sx = Math.max(-1, Math.min(1, (px / r.width) * 2 - 1));
+    const sy = Math.max(-1, Math.min(1, (py / r.height) * 2 - 1));
     tilt.tx = Math.abs(sx) < 0.05 ? 0 : sx;
     tilt.ty = Math.abs(sy) < 0.05 ? 0 : sy;
   };
