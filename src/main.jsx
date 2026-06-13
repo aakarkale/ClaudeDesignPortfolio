@@ -65,20 +65,18 @@ function App() {
   const [lpToast, setLpToast] = useState('');
   const [logoHover, setLogoHover] = useState(false);
   // Hero "experience" advances one step on every page load:
-  // labyrinth → dots → topo → spotlight → magnetic → (repeat). Decided synchronously
+  // labyrinth → dots → topo → spotlight → (repeat). Decided synchronously
   // in the initializer so the right mode mounts on the first render —
   // no flicker, no double init. Stale/unknown stored values (e.g. the
   // removed 'aurora') resolve to index -1 and wrap to the first mode.
   const [heroMode] = useState(() => {
     try {
-      const prev = localStorage.getItem('ak_hero_mode');
-      // Magnetic is dropped from the mobile rotation — without a real
-      // cursor it never gets to feel as kinetic as it does on desktop,
-      // and the other three look better on a small screen.
-      const isMobile = window.matchMedia('(pointer: coarse)').matches;
-      const cycle = isMobile ? HERO_MODES.filter(m => m !== 'magnetic') : HERO_MODES;
-      const next = cycle[(cycle.indexOf(prev) + 1) % cycle.length];
-      localStorage.setItem('ak_hero_mode', next);
+      // Storage key is versioned ('_v2') so the reordered, magnetic-free
+      // rotation resets cleanly for returning visitors who were parked
+      // mid-cycle under the old key — they land on labyrinth next load.
+      const prev = localStorage.getItem('ak_hero_mode_v2');
+      const next = HERO_MODES[(HERO_MODES.indexOf(prev) + 1) % HERO_MODES.length];
+      localStorage.setItem('ak_hero_mode_v2', next);
       return next;
     } catch (e) { return HERO_MODES[0]; }
   });
