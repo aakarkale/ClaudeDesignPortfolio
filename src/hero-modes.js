@@ -1131,7 +1131,7 @@ function initLabyrinth(host, canvas, ctx) {
     }
     // Desktop plays itself until the player catches the ball with the
     // cursor; onMove then sets tilt + lastPointerAt and holds manual
-    // control until ~1.5s after the last move. Mobile keeps the
+    // control until ~3s after the last move. Mobile keeps the
     // gyro/Lissajous virtual pointer via onMove, untouched.
     //
     // Two control models: hand/gyro play accelerates a momentum ball down
@@ -1141,7 +1141,7 @@ function initLabyrinth(host, canvas, ctx) {
     // braided pockets — it tracks the corridor deterministically while the
     // wall collisions below still constrain it.
     autoActive = false;
-    if (fine && now - lastPointerAt > 1500) { autoActive = true; driveAuto(dt); }
+    if (fine && now - lastPointerAt > 3000) { autoActive = true; driveAuto(dt); }
     if (!autoActive) {
       tilt.x += (tilt.tx - tilt.x) * 0.13;
       tilt.y += (tilt.ty - tilt.y) * 0.13;
@@ -1291,12 +1291,12 @@ function initLabyrinth(host, canvas, ctx) {
     const px = e.clientX - r.left, py = e.clientY - r.top;
     // Desktop: the autopilot keeps the ball rolling until the cursor is
     // placed ON the ball — only then does the player "grab" it. Once
-    // grabbed, any continued movement keeps manual control alive; ~1.5s
+    // grabbed, any continued movement keeps manual control alive; ~3s
     // after the last move the autopilot resumes. (Mobile has no cursor —
     // this is the ambient virtual pointer, which always steers.)
     if (fine) {
       const t = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-      const engaged = t - lastPointerAt < 1500;
+      const engaged = t - lastPointerAt < 3000;
       if (!engaged && Math.hypot(px - ball.x, py - ball.y) > ball.r + cell * 0.5) return;
       lastPointerAt = t;
     }
