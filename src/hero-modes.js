@@ -1,29 +1,27 @@
 // ====================================================================
-// Hero FX — five swappable backdrop "experiences" for the hero section.
+// Hero FX — four swappable backdrop "experiences" for the hero section.
 // The site advances to the next one on every page load (position kept in
 // localStorage — see main.jsx). Each mode is a self-contained initializer
 // that owns its own canvas drawing, listeners, observers and rAF loop,
 // and returns a single cleanup function. createHeroFX() is the small
 // controller that swaps between them.
 //
+//   labyrinth — faint tilt-maze built around the copy; sink the ball
 //   dots      — a dot-matrix field across the hero; cursor scatters it
 //   topo      — topographic contour field, cursor repels the lines
 //   spotlight — dark hero; cursor is a soft light revealing texture
-//   labyrinth — faint tilt-maze built around the copy; sink the ball
-//   magnetic  — title letters are pulled toward the cursor (kinetic type)
 //
 // Everything degrades gracefully: prefers-reduced-motion paints one calm
 // static frame and skips loops/pointer reactivity; coarse pointers skip
-// cursor interaction. No third-party libs required (magnetic uses GSAP
-// when present, falls back to inline transforms otherwise).
+// cursor interaction (an ambient virtual pointer drives them instead).
+// No third-party libs required.
 // ====================================================================
 
-// Per-refresh cycle order:
-// labyrinth → dots → topo → spotlight → magnetic → (repeat).
-export const HERO_MODES = ['labyrinth', 'dots', 'topo', 'spotlight', 'magnetic'];
+// Per-refresh cycle order (same on desktop and mobile):
+// labyrinth → dots → topo → spotlight → (repeat).
+export const HERO_MODES = ['labyrinth', 'dots', 'topo', 'spotlight'];
 export const HERO_LABELS = {
   topo: 'Topographic',
-  magnetic: 'Magnetic Type',
   spotlight: 'Spotlight',
   dots: 'Dot Matrix',
   labyrinth: 'Labyrinth',
@@ -327,12 +325,9 @@ function initTopo(host, canvas, ctx) {
   };
 }
 
-// ── Mode 2: MAGNETIC TYPE ─────────────────────────────────────────────
-// While this mode is active, React renders the hero title as per-letter
-// .hero-letter spans (see chrome.jsx) — we never mutate React-owned DOM
-// ourselves. Here we just pull each letter toward the cursor with a
-// distance falloff (iron-filings feel); the canvas holds a faint accent
-// glow. We wait for the entrance to settle before measuring rest centres.
+// Run cb once the hero entrance animation has settled (or immediately
+// under reduced motion / if it's already done). The labyrinth uses this
+// to remeasure the text layout after the intro translates the copy in.
 function whenHeroReady(cb) {
   if (document.documentElement.dataset.heroIntro === 'done' || prefersReduced()) {
     cb(); return () => {};
@@ -346,99 +341,6 @@ function whenHeroReady(cb) {
   mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-hero-intro'] });
   const teardown = () => { clearTimeout(to); mo.disconnect(); };
   return () => { done = true; teardown(); };
-}
-
-function initMagnetic(host, canvas, ctx) {
-  const reduced = prefersReduced();
-  const fine = finePointer();
-  let W = 0, H = 0, DPR = 1;
-
-  const drawGlow = () => {
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-    const [r, g, b] = rgbOf('--accent', [255, 221, 85]);
-    const cx = W * 0.5, cy = H * 0.44, R = Math.min(W, H) * 0.75;
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
-    grad.addColorStop(0, `rgba(${r},${g},${b},${isDark() ? 0.1 : 0.07})`);
-    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-  };
-
-  const stopSize = observeSize(host, canvas, (w, h, dpr) => { W = w; H = h; DPR = Math.min(dpr, 1.5); drawGlow(); }, 1.5);
-  const stopTheme = observeTheme(drawGlow);
-
-  // Reduced motion: keep just the static glow. Mobile (coarse) still
-  // splits the title and runs the magnetic field — driven by an ambient
-  // virtual pointer below, since there's no cursor.
-  if (reduced) {
-    return () => { stopSize(); stopTheme(); };
-  }
-
-  let letters = [], quick = [], moveBound = null, resizeBound = null;
-  let stopAmbient = () => {};
-  const gsap = window.gsap;
-  // Wider radius and a touch more strength on mobile so the ambient
-  // virtual pointer visibly affects a swath of letters at a time — a
-  // single 150px reach passing slowly across the title is too sparse
-  // to read as "alive" without a real cursor.
-  const RADIUS = fine ? 150 : 240;
-  const STR = fine ? 0.42 : 0.52;
-
-  const measure = () => {
-    for (const L of letters) {
-      const r = L.el.getBoundingClientRect();
-      L.px = r.left + window.scrollX + r.width / 2;
-      L.py = r.top + window.scrollY + r.height / 2;
-    }
-  };
-
-  const wire = () => {
-    const els = Array.from(document.querySelectorAll('.hero-title .hero-letter'));
-    if (!els.length) return;
-    letters = els.map((el) => ({ el, px: 0, py: 0 }));
-    measure();
-    if (gsap) {
-      quick = letters.map((L) => ({
-        x: gsap.quickTo(L.el, 'x', { duration: 0.5, ease: 'power3.out' }),
-        y: gsap.quickTo(L.el, 'y', { duration: 0.5, ease: 'power3.out' }),
-        r: gsap.quickTo(L.el, 'rotation', { duration: 0.6, ease: 'power3.out' }),
-      }));
-    }
-    moveBound = (e) => {
-      const sx = window.scrollX, sy = window.scrollY;
-      for (let i = 0; i < letters.length; i++) {
-        const L = letters[i];
-        const dx = e.clientX - (L.px - sx), dy = e.clientY - (L.py - sy);
-        const d = Math.hypot(dx, dy);
-        let tx = 0, ty = 0, tr = 0;
-        if (d < RADIUS) { const f = 1 - d / RADIUS; tx = dx * f * STR; ty = dy * f * STR; tr = dx * 0.04 * f; }
-        if (quick[i]) { quick[i].x(tx); quick[i].y(ty); quick[i].r(tr); }
-        else L.el.style.transform = `translate(${tx}px,${ty}px) rotate(${tr}deg)`;
-      }
-    };
-    resizeBound = () => {
-      if (gsap) gsap.killTweensOf(letters.map((L) => L.el));
-      letters.forEach((L) => { L.el.style.transform = ''; });
-      measure();
-    };
-    if (fine) {
-      window.addEventListener('mousemove', moveBound, { passive: true });
-    } else {
-      stopAmbient = ambientDriver(host, moveBound);
-    }
-    window.addEventListener('resize', resizeBound, { passive: true });
-  };
-
-  const stopReady = whenHeroReady(wire);
-
-  return () => {
-    stopSize(); stopTheme(); stopReady(); stopAmbient();
-    if (moveBound) window.removeEventListener('mousemove', moveBound);
-    if (resizeBound) window.removeEventListener('resize', resizeBound);
-    if (gsap && letters.length) gsap.killTweensOf(letters.map((L) => L.el));
-    letters.forEach((L) => { L.el.style.transform = ''; });
-  };
 }
 
 // ── Mode 3: SPOTLIGHT ─────────────────────────────────────────────────
@@ -1341,11 +1243,10 @@ function initLabyrinth(host, canvas, ctx) {
 }
 
 const MODES = {
-  topo: initTopo,
-  magnetic: initMagnetic,
-  spotlight: initSpotlight,
-  dots: initDots,
   labyrinth: initLabyrinth,
+  dots: initDots,
+  topo: initTopo,
+  spotlight: initSpotlight,
 };
 
 // ── Controller ────────────────────────────────────────────────────────

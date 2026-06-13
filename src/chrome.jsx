@@ -306,8 +306,8 @@ export function Hero({ theme, data, heroMode }) {
 
         <h1 className="hero-title reveal">
           {theme === 'dark'
-            ? <DarkHeroTitle split={heroMode === 'magnetic'} />
-            : <LightHeroTitle split={heroMode === 'magnetic'} />}
+            ? <DarkHeroTitle split={false} />
+            : <LightHeroTitle split={false} />}
         </h1>
 
         <div className="hero-sub reveal">
