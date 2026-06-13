@@ -204,6 +204,8 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChang
   const [pressing, setPressing] = useState(false);
 
   const startPress = (e) => {
+    // Mobile: long-press egg disabled — desktop mousedown path only.
+    if (e && e.type && e.type.startsWith('touch')) return;
     setPressing(true);
     pressTimer.current = setTimeout(() => {
       onLogoLongPress();

@@ -247,8 +247,9 @@
     setTimeout(tryInit, 800);
   }
 
-  // ─── 4. Footer "AK." 5× → particle explosion ─────────────────────
+  // ─── 4. Footer "AK." 5× → particle explosion (desktop only) ──────
   function initFooterSig() {
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
     let clicks=0, timer;
     document.addEventListener('click', e=>{
       if (!e.target.closest('.footer-sig')) return;
@@ -261,8 +262,9 @@
     });
   }
 
-  // ─── 8. Click all stats in order → achievement ───────────────────
+  // ─── 8. Click all stats in order → achievement (desktop only) ────
   function initStatAchievement() {
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
     let seq=[];
     document.addEventListener('click', e=>{
       const stat=e.target.closest('.stat'); if (!stat) { if (!e.target.closest('.about-stats-grid')) { seq=[]; document.querySelectorAll('.stat').forEach(s=>s.style.borderColor=''); } return; }
@@ -319,28 +321,6 @@
         }, i*150);
         showToast('⭐ Shoot for the stars!',{duration:2000});
       }
-    },{passive:true});
-  }
-
-  // M3. Long-press project card → behind the scenes
-  function initMobileCardLongPress() {
-    const msgs=['🔧 Built with late nights and cold coffee.','💡 This idea came from a shower thought.','🚀 Shipped in a weekend hackathon.','🐛 This one had 47 bugs before launch.','❤️ My personal favorite project.'];
-    let pressTimer, pressIdx=0;
-    document.addEventListener('touchstart', e=>{
-      const card=e.target.closest('.proj-card,.wc-card'); if (!card) return;
-      pressTimer=setTimeout(()=>{ const theme=getTheme(); confettiBurst(e.touches[0].clientX,e.touches[0].clientY,30); showToast(msgs[pressIdx++%msgs.length],{duration:3000,bg:theme==='dark'?'#1f1f1f':'#fff',color:theme==='dark'?'#fff':'#000'}); },600);
-    },{passive:true});
-    ['touchend','touchcancel','touchmove'].forEach(ev=>document.addEventListener(ev,()=>clearTimeout(pressTimer),{passive:true}));
-  }
-
-  // M4. Swipe right on hero → open to work
-  function initMobileSwipeRight() {
-    let startX=null;
-    document.addEventListener('touchstart', e=>{ if (e.touches.length===1&&window.scrollY<80) startX=e.touches[0].clientX; },{passive:true});
-    document.addEventListener('touchend', e=>{
-      if (startX===null) return;
-      const dx=e.changedTouches[0].clientX-startX; startX=null;
-      if (dx>120) showToast('🟢 Open to the right opportunities — say hi!',{duration:3200,bg:'rgb(4,196,10)',color:'#000'});
     },{passive:true});
   }
 
@@ -414,12 +394,10 @@
     initStatAchievement();
     initMobilePinch();
     initMobileSwipeUpStar();
-    initMobileCardLongPress();
-    initMobileSwipeRight();
     initEggHints();
     window.__confettiBurst = confettiBurst;
     window.__showToast = showToast;
-    console.log('%c🥚 9 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
+    console.log('%c🥚 7 Easter eggs loaded. Good luck finding them all.','color:#ffdd55;font-size:13px;font-weight:700;background:#0a0a0a;padding:4px 8px;border-radius:4px;');
   };
 
 })();
