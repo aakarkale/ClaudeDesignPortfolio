@@ -976,9 +976,9 @@ function initLabyrinth(host, canvas, ctx) {
       if (now - sink.t0 > 1500) buildBoard(); // quietly deal a new maze
       return;
     }
-    tilt.x += (tilt.tx - tilt.x) * 0.10;
-    tilt.y += (tilt.ty - tilt.y) * 0.10;
-    const G = 1500;
+    tilt.x += (tilt.tx - tilt.x) * 0.13;
+    tilt.y += (tilt.ty - tilt.y) * 0.13;
+    const G = 1750;
     ball.vx += tilt.x * G * dt;
     ball.vy += tilt.y * G * dt;
     const f = Math.exp(-2.1 * dt);
@@ -1037,8 +1037,16 @@ function initLabyrinth(host, canvas, ctx) {
     }
 
     if (playable || reduced) {
-      // Hole: a recessed disc with a softly breathing accent ring.
+      // Hole: a recessed disc lit like a beacon — a soft accent halo,
+      // a breathing ring, and a sonar ping that expands and fades so
+      // the goal reads from anywhere on the board.
       const R = cell * 0.30;
+      const halo = ctx.createRadialGradient(hole.x, hole.y, 0, hole.x, hole.y, cell * 1.15);
+      halo.addColorStop(0, `rgba(${ar},${ag},${ab},0.15)`);
+      halo.addColorStop(0.55, `rgba(${ar},${ag},${ab},0.05)`);
+      halo.addColorStop(1, `rgba(${ar},${ag},${ab},0)`);
+      ctx.fillStyle = halo;
+      ctx.beginPath(); ctx.arc(hole.x, hole.y, cell * 1.15, 0, Math.PI * 2); ctx.fill();
       const g = ctx.createRadialGradient(hole.x, hole.y, 0, hole.x, hole.y, R);
       g.addColorStop(0, dark ? 'rgba(0,0,0,0.60)' : 'rgba(20,20,20,0.16)');
       g.addColorStop(0.75, dark ? 'rgba(0,0,0,0.35)' : 'rgba(20,20,20,0.10)');
@@ -1046,9 +1054,15 @@ function initLabyrinth(host, canvas, ctx) {
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(hole.x, hole.y, R, 0, Math.PI * 2); ctx.fill();
       const k = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(now / 700);
-      ctx.strokeStyle = `rgba(${ar},${ag},${ab},${0.26 + k * 0.18})`;
+      ctx.strokeStyle = `rgba(${ar},${ag},${ab},${0.34 + k * 0.22})`;
       ctx.lineWidth = 1.25;
       ctx.beginPath(); ctx.arc(hole.x, hole.y, R * (0.76 + k * 0.10), 0, Math.PI * 2); ctx.stroke();
+      if (!reduced) {
+        const ping = (now % 2200) / 2200;
+        ctx.strokeStyle = `rgba(${ar},${ag},${ab},${(1 - ping) * (1 - ping) * 0.38})`;
+        ctx.lineWidth = 1.25;
+        ctx.beginPath(); ctx.arc(hole.x, hole.y, R * 0.9 + ping * cell * 0.95, 0, Math.PI * 2); ctx.stroke();
+      }
 
       // Ball (with sink animation: it slides into the hole and shrinks).
       let bx = ball.x, by = ball.y, br = ball.r, ba = 0.92;
