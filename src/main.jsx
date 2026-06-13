@@ -65,7 +65,7 @@ function App() {
   const [lpToast, setLpToast] = useState('');
   const [logoHover, setLogoHover] = useState(false);
   // Hero "experience" advances one step on every page load:
-  // dots → topo → spotlight → labyrinth → magnetic → (repeat). Decided synchronously
+  // labyrinth → dots → topo → spotlight → magnetic → (repeat). Decided synchronously
   // in the initializer so the right mode mounts on the first render —
   // no flicker, no double init. Stale/unknown stored values (e.g. the
   // removed 'aurora') resolve to index -1 and wrap to the first mode.

@@ -19,8 +19,8 @@
 // ====================================================================
 
 // Per-refresh cycle order:
-// dots → topo → spotlight → labyrinth → magnetic → (repeat).
-export const HERO_MODES = ['dots', 'topo', 'spotlight', 'labyrinth', 'magnetic'];
+// labyrinth → dots → topo → spotlight → magnetic → (repeat).
+export const HERO_MODES = ['labyrinth', 'dots', 'topo', 'spotlight', 'magnetic'];
 export const HERO_LABELS = {
   topo: 'Topographic',
   magnetic: 'Magnetic Type',
@@ -725,7 +725,10 @@ function initLabyrinth(host, canvas, ctx) {
   // each child so their gaps stay playable too. The core test (cell
   // inset 25%) keeps slivers usable while the PAD inflation still
   // guarantees a clear moat around the actual glyphs.
-  let topSafe = 0; // y below the fixed topbar — keep ball/hole out of it
+  let topSafe = 0;        // y below the fixed topbar — keep ball/hole out of it
+  let bandTop = 0;        // visible viewport band (host-local y) so the ball and
+  let bandBottom = 1e9;   // hole always start above the fold, below the topbar
+  let ctaRects = [];      // CTA button boxes (host-local) — steer endpoints clear
   const measureBlocked = () => {
     const PAD = fine ? 22 : 14;
     const hostR = host.getBoundingClientRect();
@@ -759,6 +762,19 @@ function initLabyrinth(host, canvas, ctx) {
     }
     const bar = document.querySelector('.topbar');
     topSafe = bar ? Math.max(0, bar.getBoundingClientRect().bottom - hostR.top + 6) : 0;
+    // Visible band: below the topbar, above the fold — with a cell of
+    // breathing room each side so the hole's ring isn't clipped.
+    bandTop = topSafe + cell * 0.6;
+    bandBottom = Math.min(H, window.innerHeight - hostR.top) - cell * 0.6;
+    // CTA button boxes (host-local) so endpoints never sit under them.
+    ctaRects = [];
+    section.querySelectorAll('.hero-actions .btn, .hero-actions a, .hero-actions button').forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width && r.height) ctaRects.push({
+        l: r.left - hostR.left, t: r.top - hostR.top,
+        r: r.right - hostR.left, b: r.bottom - hostR.top,
+      });
+    });
     openC = new Uint8Array(cols * rows);
     const inset = cell * 0.25;
     for (let j = 0; j < rows; j++) {
@@ -840,10 +856,9 @@ function initLabyrinth(host, canvas, ctx) {
     if (dir === 2) return cj < rows - 1 && !edgeH[(cj + 1) * cols + ci];
     return ci > 0 && !edgeV[cj * (cols + 1) + ci];
   };
-  // Farthest cell by corridor distance — preferring cells that aren't
-  // tucked under the fixed topbar, so the ball and the hole never hide
-  // behind chrome. Falls back to the absolute farthest if everything
-  // reachable sits in that strip.
+  // Farthest cell by corridor distance — preferring valid endpoints
+  // (visible band, clear of the CTAs). Falls back to the absolute
+  // farthest only if nothing reachable qualifies.
   const bfsFar = (src) => {
     const dist = new Int32Array(cols * rows).fill(-1);
     const q = [src]; dist[src] = 0;
@@ -851,8 +866,7 @@ function initLabyrinth(host, canvas, ctx) {
     for (let h = 0; h < q.length; h++) {
       const c = q[h];
       if (dist[c] > dist[far]) far = c;
-      const cy = offY + ((c / cols) | 0) * cell + cell / 2;
-      if (cy > topSafe && dist[c] > farPrefD) { farPrefD = dist[c]; farPref = c; }
+      if (goodEndpoint(c) && dist[c] > farPrefD) { farPrefD = dist[c]; farPref = c; }
       const nb = [c - cols, c + 1, c + cols, c - 1];
       for (let d = 0; d < 4; d++) {
         const n = nb[d];
@@ -862,10 +876,44 @@ function initLabyrinth(host, canvas, ctx) {
     return farPref >= 0 ? farPref : far;
   };
 
+  // Farthest VALID endpoint (and its corridor distance) reachable from a
+  // source — used to find the best on-screen start/hole pair within a
+  // connected region.
+  const farGood = (src) => {
+    const dist = new Int32Array(cols * rows).fill(-1);
+    const q = [src]; dist[src] = 0;
+    let bc = -1, bd = -1;
+    for (let h = 0; h < q.length; h++) {
+      const c = q[h];
+      if (goodEndpoint(c) && dist[c] > bd) { bd = dist[c]; bc = c; }
+      const nb = [c - cols, c + 1, c + cols, c - 1];
+      for (let d = 0; d < 4; d++) {
+        const n = nb[d];
+        if (passable(c, d) && openC[n] && dist[n] === -1) { dist[n] = dist[c] + 1; q.push(n); }
+      }
+    }
+    return { cell: bc, dist: bd };
+  };
+
   const cellCenter = (c) => ({
     x: offX + (c % cols) * cell + cell / 2,
     y: offY + ((c / cols) | 0) * cell + cell / 2,
   });
+
+  // Is a cell a valid spot for the ball start / hole? It must sit in the
+  // visible band (above the fold, below the topbar) and clear of the CTA
+  // buttons by the hole's radius plus a margin — so neither endpoint is
+  // ever off-screen or hidden behind "Explore Work" / "Get in Touch".
+  const goodEndpoint = (c) => {
+    const cx = offX + (c % cols) * cell + cell / 2;
+    const cy = offY + ((c / cols) | 0) * cell + cell / 2;
+    if (cy < bandTop || cy > bandBottom) return false;
+    const m = cell * 0.45;
+    for (const r of ctaRects) {
+      if (cx > r.l - m && cx < r.r + m && cy > r.t - m && cy < r.b + m) return false;
+    }
+    return true;
+  };
 
   const cellAt = (x, y) => {
     const i = Math.max(0, Math.min(cols - 1, Math.floor((x - offX) / cell)));
@@ -967,13 +1015,37 @@ function initLabyrinth(host, canvas, ctx) {
     for (let id = 0; id < compSize.length; id++)
       if (compSize[id] > bigSize) { bigSize = compSize[id]; big = id; }
     playable = bigSize >= 8 && !reduced;
-    if (big >= 0) {
+
+    // Endpoints: the two farthest-apart VALID cells (visible band, clear of
+    // the CTAs) that are connected to each other. Scan every component that
+    // holds a valid cell — not just the largest — because on cramped
+    // layouts (mobile) the biggest open region can sit entirely below the
+    // fold while the on-screen play space is a smaller connected pocket.
+    // Keep the longest valid pair so the ball start and hole are always on
+    // screen. Fall back to the largest component's plain diameter only if
+    // no component offers a valid pair.
+    let bestA = -1, bestB = -1, bestD = -1;
+    const seenComp = new Set();
+    for (let c = 0; c < cols * rows; c++) {
+      if (!openC[c] || !goodEndpoint(c)) continue;
+      const id = comp[c];
+      if (id < 0 || seenComp.has(id)) continue;
+      seenComp.add(id);
+      const a = farGood(c);
+      if (a.cell < 0) continue;
+      const b = farGood(a.cell);
+      if (b.cell < 0 || b.cell === a.cell) continue;
+      if (b.dist > bestD) { bestD = b.dist; bestA = a.cell; bestB = b.cell; }
+    }
+    if (bestA >= 0 && bestB >= 0) {
+      start = cellCenter(bestA);
+      hole = cellCenter(bestB);
+    } else if (big >= 0) {
       let seed = -1;
       for (let c = 0; c < cols * rows; c++) if (comp[c] === big) { seed = c; break; }
       const a = bfsFar(seed);
-      const b = bfsFar(a);
       start = cellCenter(a);
-      hole = cellCenter(b);
+      hole = cellCenter(bfsFar(a));
     }
     ball.x = start.x; ball.y = start.y;
     ball.vx = ball.vy = 0;
