@@ -704,6 +704,17 @@ function initLabyrinth(host, canvas, ctx) {
   let moved = 0;                    // total distance rolled — retires the hint
   const bornAt = performance.now();
 
+  // Desktop autopilot — on a fine pointer the board plays itself: a BFS
+  // through the maze from the ball's cell to the hole picks the next
+  // waypoint each frame and tilts toward it (easing in near the goal so
+  // it actually sinks). The cursor still takes over when moved, then the
+  // autopilot resumes ~2.5s after the last move — the same "manual
+  // overrides ambient" handoff the gyro/Lissajous uses on mobile.
+  let autoPath = [];
+  let autoIdx = 1;
+  let autoActive = false;
+  let lastPointerAt = -1e9;
+
   const idx = (i, j) => j * cols + i;
   const isOpen = (i, j) => i >= 0 && j >= 0 && i < cols && j < rows && openC[idx(i, j)] === 1;
 
@@ -856,6 +867,69 @@ function initLabyrinth(host, canvas, ctx) {
     y: offY + ((c / cols) | 0) * cell + cell / 2,
   });
 
+  const cellAt = (x, y) => {
+    const i = Math.max(0, Math.min(cols - 1, Math.floor((x - offX) / cell)));
+    const j = Math.max(0, Math.min(rows - 1, Math.floor((y - offY) / cell)));
+    return j * cols + i;
+  };
+
+  // BFS the solved corridor from the ball's current cell to the hole.
+  // autoPath is a stable list of cell indices [src … dst]; autoIdx is the
+  // waypoint we're currently steering toward. Computed once per maze (or
+  // on a big stray) — NOT every cell change, which would thrash the ball
+  // back and forth at junctions as the re-plan flips direction.
+  const computeAutoPath = () => {
+    const src = cellAt(ball.x, ball.y);
+    const dst = cellAt(hole.x, hole.y);
+    const prev = new Int32Array(cols * rows).fill(-2); // -2 = unvisited
+    prev[src] = -1;
+    const q = [src];
+    for (let h = 0; h < q.length; h++) {
+      const c = q[h];
+      if (c === dst) break;
+      const nb = [c - cols, c + 1, c + cols, c - 1];
+      for (let d = 0; d < 4; d++) {
+        const n = nb[d];
+        if (passable(c, d) && openC[n] && prev[n] === -2) { prev[n] = c; q.push(n); }
+      }
+    }
+    const path = [];
+    if (prev[dst] !== -2) { for (let c = dst; c !== -1; c = prev[c]) path.push(c); path.reverse(); }
+    autoPath = path;
+    autoIdx = Math.min(1, path.length - 1);
+  };
+
+  // Steer the ball's velocity straight at the active waypoint, advancing
+  // the index monotonically. The waypoint scan looks FORWARD from autoIdx
+  // so overshooting a junction advances the target rather than aiming the
+  // ball back the way it came (the cause of the earlier in-place thrash).
+  // On the final cell it eases speed toward zero so the ball settles into
+  // the cup instead of skipping past the win radius.
+  const AUTO_SPEED = 420;     // px/s glide along the corridor
+  const driveAuto = (dt) => {
+    if (autoPath.length < 2) computeAutoPath();
+    let tx, ty;
+    if (autoPath.length < 2) { tx = hole.x; ty = hole.y; }
+    else {
+      const bc = cellAt(ball.x, ball.y);
+      for (let k = autoIdx; k < autoPath.length; k++) {
+        if (autoPath[k] === bc) { autoIdx = Math.min(autoPath.length - 1, k + 1); break; }
+      }
+      const wp = cellCenter(autoPath[autoIdx]);
+      if (Math.hypot(wp.x - ball.x, wp.y - ball.y) > cell * 3) { computeAutoPath(); return; }
+      const atEnd = autoIdx >= autoPath.length - 1;
+      tx = atEnd ? hole.x : wp.x; ty = atEnd ? hole.y : wp.y;
+    }
+    const dx = tx - ball.x, dy = ty - ball.y, d = Math.hypot(dx, dy) || 1;
+    const speed = AUTO_SPEED * Math.min(1, d / (cell * 0.5)); // ease into the cup
+    const tvx = (dx / d) * speed, tvy = (dy / d) * speed;
+    // Smoothly approach the target velocity — quick enough to track turns,
+    // soft enough not to jitter at a junction.
+    const k = Math.min(1, 14 * dt);
+    ball.vx += (tvx - ball.vx) * k;
+    ball.vy += (tvy - ball.vy) * k;
+  };
+
   const renderWalls = () => {
     wallLayer = wallLayer || document.createElement('canvas');
     wallLayer.width = Math.round(W * DPR);
@@ -906,6 +980,8 @@ function initLabyrinth(host, canvas, ctx) {
     ball.r = Math.max(4.5, cell * 0.16);
     trail.length = 0;
     sink = null;
+    autoPath = [];
+    autoIdx = 1;
     renderWalls();
   };
 
@@ -981,14 +1057,28 @@ function initLabyrinth(host, canvas, ctx) {
       if (now - sink.t0 > 1500) buildBoard(); // quietly deal a new maze
       return;
     }
-    tilt.x += (tilt.tx - tilt.x) * 0.13;
-    tilt.y += (tilt.ty - tilt.y) * 0.13;
-    const G = 1750;
-    ball.vx += tilt.x * G * dt;
-    ball.vy += tilt.y * G * dt;
-    const f = Math.exp(-2.1 * dt);
-    ball.vx *= f; ball.vy *= f;
-    const sp = Math.hypot(ball.vx, ball.vy), MAX = 620;
+    // Desktop plays itself whenever the cursor is idle; moving the cursor
+    // hands control back (onMove sets tilt + lastPointerAt) for ~2.5s.
+    // Mobile keeps the gyro/Lissajous virtual pointer via onMove, untouched.
+    //
+    // Two control models: hand/gyro play accelerates a momentum ball down
+    // the tilt; the autopilot steers the velocity vector straight at the
+    // next path waypoint. Velocity-steering (vs. accelerating) is what
+    // keeps the autopilot from arcing and circling in the maze's open,
+    // braided pockets — it tracks the corridor deterministically while the
+    // wall collisions below still constrain it.
+    autoActive = false;
+    if (fine && now - lastPointerAt > 2500) { autoActive = true; driveAuto(dt); }
+    if (!autoActive) {
+      tilt.x += (tilt.tx - tilt.x) * 0.13;
+      tilt.y += (tilt.ty - tilt.y) * 0.13;
+      const G = 1750;
+      ball.vx += tilt.x * G * dt;
+      ball.vy += tilt.y * G * dt;
+      const f = Math.exp(-2.1 * dt);
+      ball.vx *= f; ball.vy *= f;
+    }
+    const sp = Math.hypot(ball.vx, ball.vy), MAX = autoActive ? 560 : 620;
     if (sp > MAX) { ball.vx *= MAX / sp; ball.vy *= MAX / sp; }
     const steps = Math.max(1, Math.ceil((Math.max(Math.abs(ball.vx), Math.abs(ball.vy)) * dt) / (ball.r * 0.8)));
     for (let s = 0; s < steps; s++) {
@@ -1124,6 +1214,11 @@ function initLabyrinth(host, canvas, ctx) {
   // Pointer offset from the hero centre = board tilt (−1..1 each axis,
   // small deadzone so a parked cursor reads as a level board).
   const onMove = (e) => {
+    // A real cursor move (fine pointer) hands control to the player and
+    // pauses the desktop autopilot for ~2.5s. On mobile this is the
+    // ambient virtual pointer, where lastPointerAt is moot (autopilot is
+    // desktop-only) but harmless.
+    if (fine) lastPointerAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
     const r = host.getBoundingClientRect();
     const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
     const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
@@ -1154,7 +1249,7 @@ function initLabyrinth(host, canvas, ctx) {
 
   // Test hook for headless verification (state peek + ball warp + kick).
   window.__heroLab = {
-    state: () => ({ x: ball.x, y: ball.y, vx: ball.vx, vy: ball.vy, hole: { ...hole }, start: { ...start }, wins, cols, rows, cell, playable }),
+    state: () => ({ x: ball.x, y: ball.y, vx: ball.vx, vy: ball.vy, tx: tilt.tx, ty: tilt.ty, hole: { ...hole }, start: { ...start }, wins, cols, rows, cell, playable, autoLen: autoPath.length, autoActive }),
     warp: (x, y) => { ball.x = x; ball.y = y; ball.vx = ball.vy = 0; },
     kick: (vx, vy) => { ball.vx = vx; ball.vy = vy; },
   };
