@@ -88,6 +88,7 @@
         el.innerText = plain.map(c=>/\s/.test(c)?c:Math.random()<p?c:chars[Math.floor(Math.random()*chars.length)]).join('');
         frame++;
       }, 55);
+      if (window.__buzz) window.__buzz('egg');
       showToast(theme==='dark'?'// SYSTEM OVERRIDE':'✦ SCRAMBLE MODE', {duration:1200});
     });
   }
@@ -100,6 +101,7 @@
       buf=(buf+e.key.toLowerCase()).slice(-3);
       if (buf==='yay') {
         buf='';
+        if (window.__buzz) window.__buzz('egg');
         confettiBurst(window.innerWidth/2, window.innerHeight*.4, 80);
         showToast('🎉 YAY! You found it!', {duration:2400});
       }
@@ -134,6 +136,7 @@
 
     const showBox = () => {
       if (document.getElementById('quote-box')) return;
+      if (window.__buzz) window.__buzz('unlock');
       const q = QUOTES[idx%QUOTES.length]; idx++;
       const theme = getTheme();
       const isDark = theme==='dark';
@@ -257,6 +260,7 @@
       timer = setTimeout(()=>clicks=0, 1400);
       if (clicks<5) return;
       clicks=0;
+      if (window.__buzz) window.__buzz('egg');
       [0,120,250].forEach(d=>setTimeout(()=>confettiBurst(e.clientX+(Math.random()-.5)*60, e.clientY+(Math.random()-.5)*60, 40), d));
       showToast('🎊 You found the AK. secret!', {duration:2400});
     });
@@ -275,6 +279,7 @@
         if (seq.length===all.length) {
           seq=[];
           setTimeout(()=>{
+            if (window.__buzz) window.__buzz('egg');
             [0,200,350].forEach(d=>setTimeout(()=>confettiBurst(window.innerWidth*(Math.random()*.6+.2),window.innerHeight*.35,50),d));
             showToast('🏆 Achievement: Full Stack Human',{duration:4000});
             all.forEach(s=>s.style.borderColor='');
@@ -295,7 +300,7 @@
     document.addEventListener('touchmove', e=>{
       if (e.touches.length!==2||initDist===null) return;
       const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      if (d<initDist*.55) { initDist=null; showToast('🔭 Zoom out — the big picture awaits.',{duration:2800,bg:getTheme()==='dark'?'#7373ff':'#1e1e1e',color:'#fff'}); }
+      if (d<initDist*.55) { initDist=null; if (window.__buzz) window.__buzz('egg'); showToast('🔭 Zoom out — the big picture awaits.',{duration:2800,bg:getTheme()==='dark'?'#7373ff':'#1e1e1e',color:'#fff'}); }
     },{passive:true});
     document.addEventListener('touchend', ()=>{ if (!arguments[0]||!arguments[0].touches||arguments[0].touches.length<2) initDist=null; },{passive:true});
   }
@@ -310,6 +315,7 @@
       startY=null;
       if (dy>160&&window.scrollY<100) {
         triggered=true; setTimeout(()=>triggered=false,3000);
+        if (window.__buzz) window.__buzz('egg');
         const theme=getTheme();
         for (let i=0;i<3;i++) setTimeout(()=>{
           const star=document.createElement('div');
