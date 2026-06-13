@@ -22,7 +22,6 @@ function useClickHaptics() {
     const onTap = (e) => {
       const t = e.target;
       if (!(t instanceof Element)) return;
-      if (t.closest('.ios-haptic-switch')) return; // our own synthetic toggle
       if (!t.closest(SEL)) return;
       buzz('click');
     };
