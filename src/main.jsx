@@ -9,61 +9,50 @@ import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer } from './chrom
 import { HERO_MODES } from './hero-modes.js';
 import { About, Work, Experience, Skills, TechReel, Contact } from './sections.jsx';
 import { initMotion } from './motion.js';
+import { buzz } from './haptics.js';
 import './easter-eggs.js';  // side-effect: sets window.initEasterEggs
 
 // Lightweight haptic tap on every press of an interactive control —
-// theme toggle, nav links, hero CTAs, project cards, chips, etc. Uses
-// the same Vibration API as useSectionHaptics, with the same platform
-// behaviour: Android fires the haptic motor, iOS Safari no-ops (no
-// public Taptic Engine binding on the web).
+// theme toggle, nav links, hero CTAs, project cards, chips, etc. Routes
+// through buzz('click') in haptics.js, which handles the platform gates
+// (Android Chrome/Firefox/Edge only — iOS Safari has no Vibration API).
 function useClickHaptics() {
   useEffect(() => {
-    if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (window.matchMedia('(pointer: fine)').matches) return;
     const SEL = 'button, a, .btn, .chip, .proj-card, .wc-card, [data-cursor="on"]';
     const onTap = (e) => {
       const t = e.target;
       if (!(t instanceof Element)) return;
       if (!t.closest(SEL)) return;
-      try { navigator.vibrate(8); } catch (err) {}
+      buzz('click');
     };
     document.addEventListener('click', onTap, { passive: true });
     return () => document.removeEventListener('click', onTap);
   }, []);
 }
 
-// Subtle haptic tick on the visitor's first arrival into each main
-// section while scrolling. Uses navigator.vibrate (Android Chrome /
-// Firefox / Edge fire the device's haptic motor — typically Android's
-// Advanced Haptics on newer hardware). iOS Safari does not expose the
-// Taptic Engine to the web at all, so the call no-ops cleanly there.
-// Desktop and reduced-motion visitors are skipped.
+// Distinct three-pulse haptic each time the visitor lands in a new main
+// section while scrolling — in either direction. The middle-band IO
+// (rootMargin shrinks the root to a 10%-tall slice around the viewport
+// midline) treats "currently active" as whichever observed section
+// occupies that band; transitioning between sections fires buzz once,
+// scrolling within a single section fires nothing. Symmetric for
+// scroll-up vs scroll-down — the old "seen-once Set" only fired the
+// first time, this re-fires on every land. Per-kind cooldown in
+// haptics.js (250ms) absorbs any boundary oscillation.
 function useSectionHaptics() {
   useEffect(() => {
-    if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (window.matchMedia('(pointer: fine)').matches) return; // mobile only
     const ids = ['about', 'work', 'experience', 'skills', 'contact'];
-    const seen = new Set();
-    let lastAt = 0;
-    // rootMargin shrinks the bottom half of the viewport — a section is
-    // considered "appearing" the moment any pixel of it crosses into the
-    // top half of the screen. Works equally well for short and tall
-    // sections (Experience is ~3600px; a percentage threshold would
-    // never trip cleanly on it).
+    let activeId = null;
     const io = new IntersectionObserver((entries) => {
+      let best = null;
       for (const e of entries) {
         if (!e.isIntersecting) continue;
-        if (seen.has(e.target.id)) continue;
-        seen.add(e.target.id);
-        // Throttle in case two sections enter back-to-back during a fast flick.
-        const now = performance.now();
-        if (now - lastAt < 250) continue;
-        lastAt = now;
-        try { navigator.vibrate(12); } catch (e) {}
+        if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
       }
-    }, { rootMargin: '0px 0px -50% 0px', threshold: 0 });
+      if (!best) return;
+      const id = best.target.id;
+      if (id !== activeId) { activeId = id; buzz('section'); }
+    }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
     ids.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
     return () => io.disconnect();
   }, []);
@@ -115,6 +104,7 @@ function App() {
           i = 0;
           setKonami(true);
           setKonamiToast(true);
+          buzz('egg');
           document.body.classList.add('konami-pulse');
           setTimeout(() => document.body.classList.remove('konami-pulse'), 900);
           setTimeout(() => setKonamiToast(false), 2800);
@@ -131,6 +121,7 @@ function App() {
   // experiences now cycle on every page refresh, not via this gesture.)
   const handleLongPress = useCallback(() => {
     setLpToast('Hi there 👋 · thanks for the squeeze');
+    buzz('unlock');
     setTimeout(() => setLpToast(''), 2200);
   }, []);
 

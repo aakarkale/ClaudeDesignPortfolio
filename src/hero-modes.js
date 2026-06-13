@@ -925,17 +925,22 @@ function initLabyrinth(host, canvas, ctx) {
   // Lissajous virtual pointer on mobile); the ball accelerates down the
   // tilt, with rolling friction and soft wall bounces. Sub-stepped so a
   // fast roll can't tunnel through a 1px wall.
+  // Wall thuds: any collision faster than THUD_V fires buzz('thud').
+  // The buzz() cooldown (90ms in haptics.js) keeps a ball rolling fast
+  // along a wall from continuously vibrating.
+  const THUD_V = 200;
+  const thud = (v) => { if (Math.abs(v) > THUD_V && typeof window.__buzz === 'function') window.__buzz('thud'); };
   const collideAxis = (axis) => {
     const ci = Math.max(0, Math.min(cols - 1, Math.floor((ball.x - offX) / cell)));
     const cj = Math.max(0, Math.min(rows - 1, Math.floor((ball.y - offY) / cell)));
     const L = offX + ci * cell, T = offY + cj * cell;
     const REST = -0.32;
     if (axis === 'x') {
-      if (edgeV[cj * (cols + 1) + ci] && ball.x - ball.r < L) { ball.x = L + ball.r; ball.vx *= REST; }
-      if (edgeV[cj * (cols + 1) + ci + 1] && ball.x + ball.r > L + cell) { ball.x = L + cell - ball.r; ball.vx *= REST; }
+      if (edgeV[cj * (cols + 1) + ci] && ball.x - ball.r < L) { thud(ball.vx); ball.x = L + ball.r; ball.vx *= REST; }
+      if (edgeV[cj * (cols + 1) + ci + 1] && ball.x + ball.r > L + cell) { thud(ball.vx); ball.x = L + cell - ball.r; ball.vx *= REST; }
     } else {
-      if (edgeH[cj * cols + ci] && ball.y - ball.r < T) { ball.y = T + ball.r; ball.vy *= REST; }
-      if (edgeH[(cj + 1) * cols + ci] && ball.y + ball.r > T + cell) { ball.y = T + cell - ball.r; ball.vy *= REST; }
+      if (edgeH[cj * cols + ci] && ball.y - ball.r < T) { thud(ball.vy); ball.y = T + ball.r; ball.vy *= REST; }
+      if (edgeH[(cj + 1) * cols + ci] && ball.y + ball.r > T + cell) { thud(ball.vy); ball.y = T + cell - ball.r; ball.vy *= REST; }
     }
   };
   // Wall ends ("posts") at the four lattice corners of the current cell —
@@ -999,11 +1004,8 @@ function initLabyrinth(host, canvas, ctx) {
     if (Math.hypot(ball.x - hole.x, ball.y - hole.y) < cell * 0.30 * 0.62) {
       sink = { t0: now, fx: ball.x, fy: ball.y };
       wins++;
-      // Success haptic (Android; iOS Safari no-ops) + a tiny confetti
-      // nod from the easter-egg helper when it's loaded.
-      if (!fine && typeof navigator !== 'undefined' && navigator.vibrate) {
-        try { navigator.vibrate([16, 60, 22]); } catch (e) {}
-      }
+      // Rising success pattern from the haptic vocabulary (Android only).
+      if (typeof window.__buzz === 'function') window.__buzz('win');
       const hr = host.getBoundingClientRect();
       if (window.__confettiBurst) window.__confettiBurst(hr.left + hole.x, hr.top + hole.y, 14);
     }
@@ -1150,10 +1152,11 @@ function initLabyrinth(host, canvas, ctx) {
     }
   }
 
-  // Test hook for headless verification (state peek + ball warp).
+  // Test hook for headless verification (state peek + ball warp + kick).
   window.__heroLab = {
-    state: () => ({ x: ball.x, y: ball.y, hole: { ...hole }, start: { ...start }, wins, cols, rows, cell, playable }),
+    state: () => ({ x: ball.x, y: ball.y, vx: ball.vx, vy: ball.vy, hole: { ...hole }, start: { ...start }, wins, cols, rows, cell, playable }),
     warp: (x, y) => { ball.x = x; ball.y = y; ball.vx = ball.vy = 0; },
+    kick: (vx, vy) => { ball.vx = vx; ball.vy = vy; },
   };
 
   return () => {

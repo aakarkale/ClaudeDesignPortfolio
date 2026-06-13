@@ -225,7 +225,6 @@ function WorkCarousel({ projects }) {
     const track = trackRef.current;
     if (!track) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const canBuzz = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function' && !reduced;
     let raf = 0, scheduled = false;
 
     const frame = () => {
@@ -266,7 +265,7 @@ function WorkCarousel({ projects }) {
       if (best !== activeRef.current) {
         activeRef.current = best;
         setActive(best);
-        if (canBuzz) { try { navigator.vibrate(8); } catch (e) {} }
+        if (typeof window.__buzz === 'function') window.__buzz('snap');
       }
     };
 
