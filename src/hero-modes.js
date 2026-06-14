@@ -110,13 +110,31 @@ function ambientDriver(host, onMove) {
 
   // Latest tilt sample and when it arrived. Stays null until the device
   // (on Android) or the user-granted permission flow (iOS) starts
-  // delivering orientation events.
+  // delivering orientation events. The neutral position (the angle the
+  // phone is at when events first start arriving) is captured from the
+  // first ~1s of samples, then locked — so whatever hold the user is in
+  // when the experience begins is treated as "level." Tilting AWAY from
+  // that neutral (in any direction) steers the ball. This replaces the
+  // old hard-coded 35° beta center, which assumed a specific reading
+  // angle and made the ball drift up at most natural hand-held holds.
   let tilt = null;        // { gamma: -90..90, beta: -180..180 }
   let tiltAt = 0;
+  let neutral = null;     // { beta, gamma, n, locked }
   const onOrient = (e) => {
     if (e.gamma == null && e.beta == null) return;
     tilt = { gamma: e.gamma || 0, beta: e.beta || 0 };
     tiltAt = performance.now();
+    if (!neutral) {
+      neutral = { beta: tilt.beta, gamma: tilt.gamma, n: 1, locked: false };
+    } else if (!neutral.locked) {
+      // Running mean over the first ~60 samples (~1s at 60 Hz). Locking
+      // after that ignores later motion so the calibration doesn't drift
+      // toward whatever the user is actively doing.
+      neutral.n += 1;
+      neutral.beta += (tilt.beta - neutral.beta) / neutral.n;
+      neutral.gamma += (tilt.gamma - neutral.gamma) / neutral.n;
+      if (neutral.n >= 60) neutral.locked = true;
+    }
   };
   window.addEventListener('deviceorientation', onOrient, { passive: true });
 
@@ -129,14 +147,22 @@ function ambientDriver(host, onMove) {
 
     let tx, ty;
     if (tilt && now - tiltAt < 2000) {
-      // Gyro-driven. ±30° of gamma / beta around a 35° resting beta maps
-      // to the same 0.12–0.88 / 0.10–0.72 spread as the Lissajous so the
-      // pointer stays within the hero even at extreme tilts.
-      const CAP = 30;
-      const gx = Math.max(-1, Math.min(1, tilt.gamma / CAP));
-      const by = Math.max(-1, Math.min(1, (tilt.beta - 35) / CAP));
+      // Gyro-driven. Center on the calibrated neutral so tiny tilts from
+      // any natural hold register; ±25° of additional tilt in gamma/beta
+      // saturates the steer. (CAP shrunk from 30→25 now that we're not
+      // burning range to bridge a guessed offset.) The virtual pointer
+      // parks at the rect CENTER (0.5) at neutral — the labyrinth's
+      // onMove reads "pointer at hero center" as level-board. The 0.40
+      // Lissajous baseline below kept the ambient cursor slightly above
+      // centre for the spotlight/dots sweep; for tilt-as-steering, true
+      // centre is the correct zero.
+      const CAP = 25;
+      const cBeta  = neutral ? neutral.beta  : 35;
+      const cGamma = neutral ? neutral.gamma : 0;
+      const gx = Math.max(-1, Math.min(1, (tilt.gamma - cGamma) / CAP));
+      const by = Math.max(-1, Math.min(1, (tilt.beta  - cBeta ) / CAP));
       tx = 0.5 + gx * 0.38;
-      ty = 0.40 + by * 0.30;
+      ty = 0.5 + by * 0.30;
     } else {
       // Autonomous Lissajous fallback.
       const t = (now - t0) / 1000;
