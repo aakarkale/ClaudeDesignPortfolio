@@ -217,14 +217,14 @@ export const AK_DATA = {
   ],
 
   education: [
-    { degree: 'M.S. in Business Analytics & Data Science', school: 'Cal State East Bay', period: '2019 — 2020', url: 'https://www.csueastbay.edu/' },
-    { degree: 'M.S. in Information Systems Management', school: 'Santa Clara University', period: '2018 — 2019', url: 'https://www.scu.edu/' },
-    { degree: 'B.E. in Information Technology', school: 'Mumbai University', period: '2012 — 2017', url: 'https://mu.ac.in/' },
+    { degree: 'M.S. in Business Analytics & Data Science', school: 'Cal State East Bay', period: '2019 — 2020', url: 'https://www.csueastbay.edu/', logo: { domain: 'csueastbay.edu', mono: 'EB', accent: '#BA0C2F' } },
+    { degree: 'M.S. in Information Systems Management', school: 'Santa Clara University', period: '2018 — 2019', url: 'https://www.scu.edu/', logo: { domain: 'scu.edu', mono: 'SCU', accent: '#862633' } },
+    { degree: 'B.E. in Information Technology', school: 'Mumbai University', period: '2012 — 2017', url: 'https://mu.ac.in/', logo: { domain: 'mu.ac.in', mono: 'MU', accent: '#1B3A6B' } },
   ],
 
   certifications: [
-    { name: 'Salesforce Certified Advanced Administrator', year: '2025', note: 'Held by 15% of certified professionals', url: 'https://trailhead.salesforce.com/en/credentials/verification/' },
-    { name: 'FAA-Certified Drone Pilot (Part 107)', year: '2021', note: 'See my YouTube Channel', url: 'https://youtube.com/@aakarkale' },
+    { name: 'Salesforce Certified Advanced Administrator', year: '2025', note: 'Held by 15% of certified professionals', url: 'https://trailhead.salesforce.com/en/credentials/verification/', logo: { domain: 'salesforce.com', mono: 'SF', accent: '#00A1E0' } },
+    { name: 'FAA-Certified Drone Pilot (Part 107)', year: '2021', note: 'See my YouTube Channel', url: 'https://youtube.com/@aakarkale', logo: { domain: 'faa.gov', mono: 'FAA', accent: '#1A4D8F' } },
   ],
 
   papers: [

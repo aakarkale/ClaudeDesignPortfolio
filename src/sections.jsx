@@ -457,6 +457,43 @@ export function Experience({ data }) {
   );
 }
 
+// A small logo tile for an institution / certifying body. Tries real
+// remote logos in order (Clearbit → unavatar → favicon); each failure
+// advances to the next source, and if all fail it falls back to a clean
+// monogram in the institution's accent colour — so it never shows a
+// broken image. The light tile keeps colored/dark marks legible on the
+// dark panels (the LinkedIn-style convention) and stays consistent
+// whether a real logo or the monogram is showing.
+function InstitutionLogo({ logo }) {
+  const [step, setStep] = useState(0);
+  if (!logo) return null;
+  const { domain, mono = '', accent } = logo;
+  const srcs = domain ? [
+    `https://logo.clearbit.com/${domain}`,
+    `https://unavatar.io/${domain}?fallback=false`,
+    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+  ] : [];
+  const exhausted = step >= srcs.length;
+  return (
+    <span className="panel-logo" style={accent ? { '--logo-accent': accent } : undefined} aria-hidden="true">
+      {!exhausted ? (
+        <img
+          className="panel-logo-img"
+          src={srcs[step]}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          draggable="false"
+          onError={() => setStep((s) => s + 1)}
+        />
+      ) : (
+        <span className="panel-logo-mono">{mono}</span>
+      )}
+    </span>
+  );
+}
+
 function EducationPanel({ data }) {
   return (
     <div className="panel panel-static">
@@ -468,9 +505,10 @@ function EducationPanel({ data }) {
               href={e.url || '#'}
               target={e.url ? '_blank' : undefined}
               rel={e.url ? 'noreferrer' : undefined}
-              className="panel-row"
+              className="panel-row panel-row-logo"
               data-cursor="on"
             >
+              <InstitutionLogo logo={e.logo} />
               <div className="panel-row-body">
                 <div className="panel-line-a">{e.degree}</div>
                 <div className="panel-line-b">{e.school} · {e.period}</div>
@@ -495,10 +533,11 @@ function CertsPanel({ data }) {
               href={c.url || '#'}
               target={c.url ? '_blank' : undefined}
               rel={c.url ? 'noreferrer' : undefined}
-              className="panel-row"
+              className="panel-row panel-row-logo"
               data-cursor="on"
               onClick={c.url ? undefined : (e) => e.preventDefault()}
             >
+              <InstitutionLogo logo={c.logo} />
               <div className="panel-row-body">
                 <div className="panel-line-a">{c.name}</div>
                 <div className="panel-line-b">{c.year}{c.note ? ` · ${c.note}` : ''}</div>
