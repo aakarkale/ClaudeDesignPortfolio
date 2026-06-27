@@ -457,22 +457,24 @@ export function Experience({ data }) {
   );
 }
 
-// A small logo tile for an institution / certifying body. Tries real
-// remote logos in order (Clearbit → unavatar → favicon); each failure
-// advances to the next source, and if all fail it falls back to a clean
-// monogram in the institution's accent colour — so it never shows a
-// broken image. The light tile keeps colored/dark marks legible on the
-// dark panels (the LinkedIn-style convention) and stays consistent
-// whether a real logo or the monogram is showing.
+// A small logo tile for an institution / certifying body. Prefers a
+// locally-bundled, optimized logo (assets/logos/*.png); if absent or it
+// fails, it tries real remote logos (Clearbit → unavatar → favicon);
+// each failure advances to the next source, and if all fail it falls
+// back to a clean monogram in the institution's accent colour — so it
+// never shows a broken image. The light tile keeps colored/dark marks
+// legible on the dark panels (the LinkedIn-style convention) and stays
+// consistent whether a real logo or the monogram is showing.
 function InstitutionLogo({ logo }) {
   const [step, setStep] = useState(0);
   if (!logo) return null;
-  const { domain, mono = '', accent } = logo;
-  const srcs = domain ? [
-    `https://logo.clearbit.com/${domain}`,
-    `https://unavatar.io/${domain}?fallback=false`,
-    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
-  ] : [];
+  const { file, domain, mono = '', accent } = logo;
+  const srcs = [
+    file,
+    domain && `https://logo.clearbit.com/${domain}`,
+    domain && `https://unavatar.io/${domain}?fallback=false`,
+    domain && `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+  ].filter(Boolean);
   const exhausted = step >= srcs.length;
   return (
     <span className="panel-logo" style={accent ? { '--logo-accent': accent } : undefined} aria-hidden="true">
