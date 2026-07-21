@@ -146,6 +146,24 @@ export const AK_DATA = {
       accent: 'rgb(255,107,53)',
       url: 'https://potluck-hazel.vercel.app/',
     },
+    {
+      id: 'been',
+      index: '08',
+      title: 'Been',
+      oneLiner: 'Track everywhere you’ve been and watch your personal world map fill in.',
+      tags: ['Travel', 'Maps', 'Web App'],
+      accent: 'rgb(20,184,166)',
+      url: 'https://been-lac.vercel.app/',
+    },
+    {
+      id: 'interviewbrain',
+      index: '09',
+      title: 'InterviewBrain',
+      oneLiner: 'AI interview prep — tailored questions, model answers, and instant feedback.',
+      tags: ['AI', 'Interview Prep', 'LLM'],
+      accent: 'rgb(99,102,241)',
+      url: 'https://interview-brain-fawn.vercel.app/',
+    },
   ],
 
   secretProject: {
