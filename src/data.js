@@ -159,7 +159,7 @@ export const AK_DATA = {
       id: 'interviewbrain',
       index: '09',
       title: 'InterviewBrain',
-      oneLiner: 'AI interview prep — tailored questions, model answers, and instant feedback.',
+      oneLiner: 'Your applications, your stories, and AI mocks from your own materials — all wired into one brain that learns where you’re strong and where you’ll get caught!',
       tags: ['AI', 'Interview Prep', 'LLM'],
       accent: 'rgb(99,102,241)',
       url: 'https://interview-brain-fawn.vercel.app/',
