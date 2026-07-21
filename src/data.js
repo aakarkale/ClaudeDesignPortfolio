@@ -99,7 +99,7 @@ export const AK_DATA = {
       oneLiner: 'AI-powered personal finance with smart budgeting and intelligent investing.',
       tags: ['FinTech', 'AI', 'Replit'],
       accent: 'rgb(4,196,10)',
-      url: 'https://align-money-aakarsidehustle.replit.app/',
+      url: 'https://alignmoney.vercel.app/',
     },
     {
       id: 'biotracker',
@@ -135,7 +135,7 @@ export const AK_DATA = {
       oneLiner: 'Born from one expensive lesson at a notorious SF intersection.',
       tags: ['Real-time', 'Alerts'],
       accent: 'rgb(255,69,56)',
-      url: 'https://traffic-camera-alert.replit.app/',
+      url: 'https://traffic-camera-alert.vercel.app/',
     },
     {
       id: 'potluck',
@@ -144,7 +144,7 @@ export const AK_DATA = {
       oneLiner: 'Share one link so everyone sees what’s on the table — no more six identical pasta salads.',
       tags: ['Events', 'Social', 'Web App'],
       accent: 'rgb(255,107,53)',
-      url: 'https://potluck.aakarkale.com/',
+      url: 'https://potluck-hazel.vercel.app/',
     },
   ],
 
