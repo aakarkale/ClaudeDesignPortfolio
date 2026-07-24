@@ -84,22 +84,22 @@ export const AK_DATA = {
 
   projects: [
     {
-      id: 'archly',
-      index: '01',
-      title: 'Archly AI',
-      oneLiner: 'LLM-powered voice interview coach with RAG and agentic capabilities.',
-      tags: ['RAG', 'LLM', 'Voice AI', 'Cursor'],
-      accent: 'rgb(115,115,255)',
-      url: 'https://archly.dev/',
-    },
-    {
       id: 'alignmoney',
-      index: '02',
+      index: '01',
       title: 'AlignMoney',
       oneLiner: 'AI-powered personal finance with smart budgeting and intelligent investing.',
       tags: ['FinTech', 'AI', 'Replit'],
       accent: 'rgb(4,196,10)',
       url: 'https://alignmoney.vercel.app/',
+    },
+    {
+      id: 'archly',
+      index: '02',
+      title: 'Archly AI',
+      oneLiner: 'LLM-powered voice interview coach with RAG and agentic capabilities.',
+      tags: ['RAG', 'LLM', 'Voice AI', 'Cursor'],
+      accent: 'rgb(115,115,255)',
+      url: 'https://archly.dev/',
     },
     {
       id: 'biotracker',
