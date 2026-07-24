@@ -31,7 +31,7 @@ export const AK_DATA = {
       period: 'May 2023 — Present',
       bullets: [
         'Shipped an LLM voice agent + call-intelligence feature on Dialpad in 3 months; 50+ dealership call centers auto-route Salesforce actions with zero human review.',
-        'Owned AcquireCars (patent filed) end-to-end — an AI/ML acquisition platform on AWS — lifting free-to-paid conversion +11% and cutting time-to-value 58% (12 → 5 days).',
+        'Own AcquireCars, a patented ML platform that decides which vehicles to buy and at what price — turning messy multi-source data into buying decisions people trust with real money; +11% free-to-paid conversion and 58% faster time-to-value (12 → 5 days).',
         'Closed customer feedback loops with 50–60 dealerships; live call transcripts fed straight into sprint priorities and agent refinement.',
         'Ran A/B experiments across onboarding + activation with eng/design/data; +30% operational efficiency, with quarterly AI/ML strategy briefings to C-suite.',
       ],
