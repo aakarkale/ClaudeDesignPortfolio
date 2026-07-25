@@ -30,8 +30,9 @@ export const AK_DATA = {
       place: 'San Jose, CA',
       period: 'May 2023 — Present',
       bullets: [
+        { text: 'Own AcquireCars, a patented ML platform that decides which vehicles to buy and at what price, turning messy multi-source data into buying decisions people trust with real money; +11% free-to-paid conversion and 58% faster time-to-value (12 → 5 days).', link: { label: 'AcquireCars', href: 'https://acquirecars.com/' } },
+        { text: 'Lead DealerCloud, a first-of-its-kind enterprise CRM built jointly with Salesforce and Cars Commerce; mostly a partnerships job, aligning three orgs’ roadmaps into one product with no single owner.', link: { label: 'DealerCloud', href: 'https://www.dealercloud.com/' } },
         'Shipped an LLM voice agent + call-intelligence feature on Dialpad in 3 months; 50+ dealership call centers auto-route Salesforce actions with zero human review.',
-        'Owned AcquireCars (patent filed) end-to-end — an AI/ML acquisition platform on AWS — lifting free-to-paid conversion +11% and cutting time-to-value 58% (12 → 5 days).',
         'Closed customer feedback loops with 50–60 dealerships; live call transcripts fed straight into sprint priorities and agent refinement.',
         'Ran A/B experiments across onboarding + activation with eng/design/data; +30% operational efficiency, with quarterly AI/ML strategy briefings to C-suite.',
       ],
@@ -42,7 +43,7 @@ export const AK_DATA = {
       place: 'San Francisco, CA',
       period: 'Feb 2021 — May 2023',
       bullets: [
-        'Owned strategy for a healthcare IoT B2B SaaS — 6 releases/quarter across 16 pilots, CSAT +30%, 99.95% uptime at ~450ms ingest.',
+        'Owned strategy for a healthcare IoT B2B SaaS: 6 releases/quarter across 16 pilots, CSAT +30%, 99.95% uptime at ~450ms ingest.',
         'Ran 180+ usability sessions with 60+ clinicians on an AI clinical decision tool: acceptance +17%, diagnostic turnaround −14%, onboarding −43%.',
         'Led a B2B telemedicine platform (PRDs, wireframes, API specs): appointment completion +12%, feature adoption +62%, NPS +11 post-launch.',
         'Briefed senior leadership and client execs on ML model performance and product strategy across parallel B2B engagements.',
