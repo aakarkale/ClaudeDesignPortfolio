@@ -420,6 +420,25 @@ function ProjectCardFace({ p, big }) {
 }
 
 // ─── Experience ──────────────────────────────────────────────────────
+// A bullet is either a plain string or { text, link:{label, href} } — the
+// latter wraps the first occurrence of `label` in the text as a link
+// (used to link product names like AcquireCars / DealerCloud out).
+function ExpBullet({ b }) {
+  if (typeof b === 'string') return <li>{b}</li>;
+  const { text = '', link } = b || {};
+  const i = link && link.label ? text.indexOf(link.label) : -1;
+  if (i < 0) return <li>{text}</li>;
+  return (
+    <li>
+      {text.slice(0, i)}
+      <a href={link.href} target="_blank" rel="noreferrer" className="exp-link" data-cursor="on">
+        {link.label}
+      </a>
+      {text.slice(i + link.label.length)}
+    </li>
+  );
+}
+
 export function Experience({ data }) {
   return (
     <section id="experience" data-section="experience" data-screen-label="04 Experience">
@@ -440,7 +459,7 @@ export function Experience({ data }) {
                   <span className="exp-place">{e.place}</span>
                 </div>
                 <ul className="exp-bullets">
-                  {e.bullets.map((b, j) => <li key={j}>{b}</li>)}
+                  {e.bullets.map((b, j) => <ExpBullet key={j} b={b} />)}
                 </ul>
               </div>
             </article>
