@@ -30,10 +30,9 @@ export const AK_DATA = {
       place: 'San Jose, CA',
       period: 'May 2023 — Present',
       bullets: [
-        { text: 'Own AcquireCars, a patented ML platform that decides which vehicles to buy and at what price, turning messy multi-source data into buying decisions people trust with real money; +11% free-to-paid conversion and 58% faster time-to-value (12 → 5 days).', link: { label: 'AcquireCars', href: 'https://acquirecars.com/' } },
+        { text: 'Owned the entire product lifecycle for AcquireCars from Ideation to Launch, a patented ML platform that helps dealerships decide which vehicles to buy and at what price, turning messy multi-source data into buying decisions customers trust with real money.', link: { label: 'AcquireCars', href: 'https://acquirecars.com/' } },
         { text: 'Led DealerCloud, an enterprise CRM built through a first-of-its-kind partnership between DGDG, Salesforce, and CarsCommerce, replacing legacy dealership sales platforms. I owned design, roadmap, and the migration from legacy CRM to production across 16 rooftops, lifting closing ratio by 20% and speed-to-lead by 30%.', link: { label: 'DealerCloud', href: 'https://www.dealercloud.com/' } },
-        'Shipped an LLM voice agent + call-intelligence feature on Dialpad in 3 months; 50+ dealership call centers auto-route Salesforce actions with zero human review.',
-        'Closed customer feedback loops with 50–60 dealerships; live call transcripts fed straight into sprint priorities and agent refinement.',
+        'Shipped an LLM voice agent + call-intelligence feature on our DealerCloud CRM Platform on the Salesforce architecture in 3 months; adopted by 50+ dealership call centers using auto-route Salesforce actions with zero human review.',
         'Ran A/B experiments across onboarding + activation with eng/design/data; +30% operational efficiency, with quarterly AI/ML strategy briefings to C-suite.',
       ],
     },
