@@ -30,9 +30,9 @@ export const AK_DATA = {
       place: 'San Jose, CA',
       period: 'May 2023 — Present',
       bullets: [
-        'Shipped an LLM voice agent + call-intelligence feature on Dialpad in 3 months; 50+ dealership call centers auto-route Salesforce actions with zero human review.',
         { text: 'Own AcquireCars, a patented ML platform that decides which vehicles to buy and at what price, turning messy multi-source data into buying decisions people trust with real money; +11% free-to-paid conversion and 58% faster time-to-value (12 → 5 days).', link: { label: 'AcquireCars', href: 'https://acquirecars.com/' } },
         { text: 'Lead DealerCloud, a first-of-its-kind enterprise CRM built jointly with Salesforce and Cars Commerce; mostly a partnerships job, aligning three orgs’ roadmaps into one product with no single owner.', link: { label: 'DealerCloud', href: 'https://www.dealercloud.com/' } },
+        'Shipped an LLM voice agent + call-intelligence feature on Dialpad in 3 months; 50+ dealership call centers auto-route Salesforce actions with zero human review.',
         'Closed customer feedback loops with 50–60 dealerships; live call transcripts fed straight into sprint priorities and agent refinement.',
         'Ran A/B experiments across onboarding + activation with eng/design/data; +30% operational efficiency, with quarterly AI/ML strategy briefings to C-suite.',
       ],
