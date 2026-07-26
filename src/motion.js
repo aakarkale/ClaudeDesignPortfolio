@@ -80,6 +80,13 @@ export function initMotion() {
     defaults: { ease: 'power4.out' },
     onComplete: () => {
       lines.forEach((l) => { l.style.overflow = 'visible'; });
+      // Drop GSAP's leftover identity transform (translate(0px,0px)). It
+      // keeps each word on its own composited layer, and compositing a
+      // background-clip:text gradient is what produces stray clipped-glyph
+      // fragments in WebKit — the blob at the bottom of the "K". Cleared
+      // only once the intro has landed, so the animation is unaffected.
+      if (words.length) gsap.set(words, { clearProps: 'transform,translate,rotate,scale,willChange' });
+      if (heroDot) gsap.set(heroDot, { clearProps: 'transform,translate,rotate,scale,display,willChange' });
       // Title is settled — magnetic hero mode may now split it into letters.
       document.documentElement.dataset.heroIntro = 'done';
     },
