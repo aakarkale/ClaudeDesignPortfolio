@@ -376,7 +376,7 @@ function DarkHeroTitle({ split }) {
     <>
       <span className="hero-line">
         <span className="hero-word">{wordContent('Aakar', split)}</span>{' '}
-        <span className="hero-word hero-word-accent">{wordContent('Kale', split)}<span id="hero-dot">.</span></span>
+        <span className="hero-word hero-word-accent">{wordContent('Kale', split)}</span>
       </span>
       <span className="hero-line hero-line-sub">
         <span className="hero-word-ghost">{wordContent('Senior Product Manager,', split)}</span>
