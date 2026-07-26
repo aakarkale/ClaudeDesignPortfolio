@@ -69,8 +69,6 @@ export function initMotion() {
   document.documentElement.classList.remove('pre-intro');
   if (words.length) gsap.set(words, { yPercent: 130 });
 
-  const heroDot = document.querySelector('#hero-dot');
-  if (heroDot) gsap.set(heroDot, { scale: 0, display: 'inline-block', transformOrigin: '50% 70%' });
   gsap.set('.hero-meta',         { autoAlpha: 0, y: -16 });
   gsap.set('.hero-sub',          { autoAlpha: 0, y: 22 });
   gsap.set('.hero-actions .btn', { autoAlpha: 0, y: 14, scale: 0.94 });
@@ -86,15 +84,11 @@ export function initMotion() {
       // fragments in WebKit — the blob at the bottom of the "K". Cleared
       // only once the intro has landed, so the animation is unaffected.
       if (words.length) gsap.set(words, { clearProps: 'transform,translate,rotate,scale,willChange' });
-      if (heroDot) gsap.set(heroDot, { clearProps: 'transform,translate,rotate,scale,display,willChange' });
       // Title is settled — magnetic hero mode may now split it into letters.
       document.documentElement.dataset.heroIntro = 'done';
     },
   });
   if (words.length) intro.to(words, { yPercent: 0, duration: 1.1, stagger: 0.09 }, 0);
-  if (heroDot) intro.to(heroDot, {
-    scale: 1, ease: 'elastic.out(1, 0.45)', duration: 0.9,
-  }, 0.42);
   intro
     .to('.hero-meta',  { autoAlpha: 1, y: 0, duration: 0.55 }, 0.18)
     .to('.hero-sub',   { autoAlpha: 1, y: 0, duration: 0.65 }, 0.32)
