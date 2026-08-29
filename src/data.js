@@ -164,6 +164,15 @@ export const AK_DATA = {
       accent: 'rgb(99,102,241)',
       url: 'https://interview-brain-fawn.vercel.app/',
     },
+    {
+      id: 'hearth',
+      index: '10',
+      title: 'Hearth',
+      oneLiner: 'Your bill tells you what you owe. Hearth tells you why.',
+      tags: ['Energy', 'Analytics', 'Home'],
+      accent: 'rgb(245,158,11)',
+      url: 'https://home-energy-analytics.vercel.app/',
+    },
   ],
 
   secretProject: {
