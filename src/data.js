@@ -32,8 +32,7 @@ export const AK_DATA = {
       bullets: [
         { text: 'Owned the entire product lifecycle for AcquireCars from Ideation to Launch, a patented ML platform that helps dealerships decide which vehicles to buy and at what price, turning messy multi-source data into buying decisions customers trust with real money.', link: { label: 'AcquireCars', href: 'https://acquirecars.com/' } },
         { text: 'Led DealerCloud, an enterprise CRM built through a first-of-its-kind partnership between DGDG, Salesforce, and CarsCommerce, replacing legacy dealership sales platforms. I owned design, roadmap, and the migration from legacy CRM to production across 16 rooftops, lifting closing ratio by 20% and speed-to-lead by 30%.', link: { label: 'DealerCloud', href: 'https://www.dealercloud.com/' } },
-        'Shipped an LLM voice agent + call-intelligence feature on our DealerCloud CRM Platform on the Salesforce architecture in 3 months; adopted by 50+ dealership call centers using auto-route Salesforce actions with zero human review.',
-        'Ran A/B experiments across onboarding + activation with eng/design/data; +30% operational efficiency, with quarterly AI/ML strategy briefings to C-suite.',
+        'Over the last few years at DGDG I’ve built and expanded DGDGDash, the internal ops backbone and analytics layer across 18 rooftops, surfacing inventory, sales, service and finance performance in real time, cutting manual reporting hours by 40% and giving teams and leadership one shared source of truth.',
       ],
     },
     {
