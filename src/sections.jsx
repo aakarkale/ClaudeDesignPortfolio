@@ -406,7 +406,15 @@ function ProjectCardFace({ p, big }) {
     <div className="proj-face">
       <div className="proj-top">
         <span className="proj-index">{p.index}</span>
-        <span className="proj-dot" style={{ background: p.accent }} />
+        {/* A brand logo replaces the accent dot rather than joining it —
+            the mark already carries the tile's identity and colour, so
+            showing both reads as clutter. Tiles without a logo are
+            untouched. Shared by the desktop grid and the mobile
+            carousel, which both render this face. */}
+        {p.logo
+          ? <img className="proj-logo" src={p.logo} alt="" aria-hidden="true"
+                 loading="lazy" decoding="async" draggable="false" />
+          : <span className="proj-dot" style={{ background: p.accent }} />}
       </div>
       <div className="proj-body">
         <h3 className="proj-title">{p.title}</h3>
