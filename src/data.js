@@ -172,6 +172,16 @@ export const AK_DATA = {
       accent: 'rgb(245,158,11)',
       url: 'https://home-energy-analytics.vercel.app/',
     },
+    {
+      id: 'dealercloud',
+      index: '11',
+      title: 'DealerCloud',
+      oneLiner: 'The marketing site I designed for DealerCloud, an automotive CRM on Salesforce which I also helped productize and ship.',
+      tags: ['CRM', 'Salesforce', 'Web Design'],
+      accent: 'rgb(0,88,219)',
+      logo: 'assets/logos/dealercloud.png',
+      url: 'https://www.dealercloud.com/',
+    },
   ],
 
   secretProject: {

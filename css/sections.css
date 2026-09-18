@@ -524,6 +524,23 @@ section[data-hero-mode="labyrinth"] .hero-backdrop {
 .proj-dot {
   width: 10px; height: 10px; border-radius: 50%;
 }
+/* Brand logo in the accent dot's slot. Sized by height so marks of any
+   aspect ratio line up on the same baseline as the index, with max-width
+   capping a very wide wordmark. Held slightly back at rest so a saturated
+   mark doesn't outshout the tile's title, then brought to full on hover
+   along with the card lift. Opacity only — no transform — so there is
+   nothing extra to unwind for reduced-motion visitors. */
+.proj-logo {
+  height: 28px;
+  width: auto;
+  max-width: 64px;
+  object-fit: contain;
+  opacity: 0.88;
+  transition: opacity 300ms cubic-bezier(.2,.8,.2,1);
+}
+.proj-card:hover .proj-logo,
+.wc-card:hover .proj-logo { opacity: 1; }
+.proj-big .proj-logo { height: 34px; max-width: 78px; }
 .proj-body { display: flex; flex-direction: column; gap: 10px; }
 .proj-title {
   margin: 0;
