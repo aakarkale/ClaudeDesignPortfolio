@@ -1,0 +1,84 @@
+# Aakar Kale
+
+> Ex-founder turned Senior PM, turning ambiguity into outcomes. Shaping the next generation of products with clarity and purpose.
+
+Senior Product Manager based in San Francisco, CA, originally from Mumbai, India.
+
+I've always introduced myself as an engineer and a tech enthusiast — someone who tears apart how things work and gets a kick out of putting them back together, better. MKBHD and the smartphone revolution pulled me into tech. These days it's the architecture behind large language models and the craft of building products that millions of people actually use.
+
+Born and raised in Mumbai, currently living in San Francisco — chasing childhood dreams in Silicon Valley. You'll find me frequenting city beaches, looking for answers to life's questions and a good spot to catch the sunset.
+
+I'm a PM who thinks in data. Machine learning and data science aren't buzzwords on my resume — they're how I think about problems: find the signal, test the hypothesis, ship the thing, measure what happens.
+
+I'm a product manager, a data engineer, a startup enthusiast, a videographer, a marathon runner, a proud son, a loving brother, and a lifetime student. I'm an optimist who believes consistent hard work almost always beats smart work.
+
+## Experience
+
+- **Senior Product Manager, Growth**, DGDG, Inc., San Jose, CA (May 2023 — Present)
+  - Led DealerCloud, an enterprise CRM built through a first-of-its-kind partnership between DGDG, Salesforce, and CarsCommerce, replacing legacy dealership sales platforms. I owned design, roadmap, and the migration from legacy CRM to production across 16 rooftops, lifting closing ratio by 20% and speed-to-lead by 30%.
+  - Worked closely with the CEO and leadership team to align product strategy, negotiate vendor contracts, translate engineering context into clear timelines, and drive commercial launch readiness for DealerCloud.
+  - Owned the entire product lifecycle for AcquireCars from Ideation to Launch, a patented ML platform that helps dealerships decide which vehicles to buy and at what price, turning messy multi-source data into buying decisions customers trust with real money.
+  - Over the last few years at DGDG I’ve built and expanded DGDGDash, the internal ops backbone and analytics layer across 18 rooftops, surfacing inventory, sales, service and finance performance in real time, cutting manual reporting hours by 40% and giving teams and leadership one shared source of truth.
+- **Technology Consultant — Product Org**, ZS Associates, San Francisco, CA (Feb 2021 — May 2023)
+  - Owned strategy for a healthcare IoT B2B SaaS: 6 releases/quarter across 16 pilots, CSAT +30%, 99.95% uptime at ~450ms ingest.
+  - Ran 180+ usability sessions with 60+ clinicians on an AI clinical decision tool: acceptance +17%, diagnostic turnaround −14%, onboarding −43%.
+  - Led a B2B telemedicine platform (PRDs, wireframes, API specs): appointment completion +12%, feature adoption +62%, NPS +11 post-launch.
+  - Briefed senior leadership and client execs on ML model performance and product strategy across parallel B2B engagements.
+- **Data Engineering Intern**, T-Mobile USA, Bellevue, WA (Jun 2019 — Aug 2019)
+  - Built a real-time 5G rollout dashboard (Python/SQL/Azure/Power BI) adopted by 200+ reps across 12 regions; coverage answers 10 min → 30 sec (−95%), 99.9% uptime.
+  - Forecast peak demand with Python time-series (~7% MAPE); hotspot fixes cut outages −19% and call-drops −14%.
+- **Project Manager, M&A Lead**, Navayuvak Entrepreneurs, Mumbai, India (Jun 2017 — Jul 2018)
+  - Built C-suite relationships with 80+ CEOs, VCs, and enterprise buyers; QBRs tying roadmap to ROI unlocked $1.45M in funding, pilots, and co-sell deals.
+  - Built an executive feedback engine wiring signals into roadmap prioritization; NPS +12 across 75+ portfolio companies.
+  - Systematized discovery across 500+ founders into PRDs and GTM plays for 5 fintech offerings; time-to-launch −35%, accelerator 6× YoY revenue.
+- **Co-Founder & CEO**, Bookmarked Inc., Mumbai, India (Oct 2014 — Jan 2017)
+  - Scaled a B2C book marketplace 0→1 with a 24-person team built from scratch; break-even in 3 months, INR 900k revenue by Q4.
+  - Sold 50k+ books to 15k+ customers, owning the full product, ops, and growth stack.
+  - Ran GA, CrazyEgg, and Marketo to iterate UX and accelerate acquisition via data-driven content + conversion gains.
+
+## Selected work
+
+- [AlignMoney](https://alignmoney.vercel.app/): AI-powered personal finance with smart budgeting and intelligent investing.
+- [Archly AI](https://archly.dev/): LLM-powered voice interview coach with RAG and agentic capabilities.
+- [BioTracker](https://bio-tracker-rouge.vercel.app/): ML-powered health analytics hub for biomarker tracking and personalized insights.
+- [PhotoCloudCRM](https://photo-cloud-studio.replit.app/): AI-integrated photo business platform with built-in CRM workflows.
+- [Aura Focus AR](https://aura-focus.replit.app): AR smart glasses that pin voice reminders to real-world spots around your home — built for ADHD focus.
+- [Traffic Camera Alert](https://traffic-camera-alert.vercel.app/): Born from one expensive lesson at a notorious SF intersection.
+- [Potluck](https://potluck-hazel.vercel.app/): Share one link so everyone sees what’s on the table — no more six identical pasta salads.
+- [Been](https://been-lac.vercel.app/): Drop notes and reminders on the places that matter, then get gently nudged when you’re nearby.
+- [InterviewBrain](https://interview-brain-fawn.vercel.app/): Your applications, your stories, and AI mocks from your own materials — all wired into one brain that learns where you’re strong and where you’ll get caught!
+- [Hearth](https://home-energy-analytics.vercel.app/): Your bill tells you what you owe. Hearth tells you why.
+- [DealerCloud](https://www.dealercloud.com/): The marketing site I designed for DealerCloud, an automotive CRM on Salesforce which I also helped productize and ship.
+
+## Skills
+
+- AI/ML & LLM: RAG, Agentic Workflows, Prompt Engineering, TensorFlow, Keras, Scikit-Learn, PySpark
+- AI Coding: Cursor, Claude Code, Replit Agent, Lovable, Gemini Code Assist
+- Languages: Python, JavaScript, TypeScript, SQL, Java, R
+- Cloud: AWS (EC2, S3, Lambda, Redshift), GCP, Azure
+- Data: Tableau, Power BI, Pandas, NumPy, Dovetail AI
+- Product & Design: Figma, Jira, Confluence, Productboard, Airtable
+
+## Education
+
+- M.S. in Business Analytics & Data Science, Cal State East Bay (2019 — 2020)
+- M.S. in Information Systems Management, Santa Clara University (2018 — 2019)
+- B.E. in Information Technology, Mumbai University (2012 — 2017)
+
+## Certifications
+
+- Salesforce Certified Advanced Administrator (2025)
+- FAA-Certified Drone Pilot (Part 107) (2021)
+
+## Publications
+
+- [Number Plate Recognition System: A Smart City Solution](https://aakarkale.github.io/ClaudeDesignPortfolio/papers/Number.Plate.Recognition.System.pdf): IRJET · Vol 4, Issue 12, Dec 2017
+- [3D Face Recognition Technology in Network Security Applications](https://aakarkale.github.io/ClaudeDesignPortfolio/papers/3D.Face.Recognition.Technology.pdf): IRJET · Vol 4, Issue 12, Dec 2017
+
+## Contact
+
+- Email: aakararunkale@gmail.com
+- https://linkedin.com/in/aakarkale
+- https://x.com/aakarkale
+- https://www.youtube.com/channel/UCi_Gt1HFpBS5p3TSLlkP6Kw
+- Portfolio: https://aakarkale.github.io/ClaudeDesignPortfolio/
