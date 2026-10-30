@@ -72,8 +72,8 @@ I'm a product manager, a data engineer, a startup enthusiast, a videographer, a 
 
 ## Publications
 
-- [Number Plate Recognition System: A Smart City Solution](https://aakarkale.github.io/ClaudeDesignPortfolio/papers/Number.Plate.Recognition.System.pdf): IRJET · Vol 4, Issue 12, Dec 2017
-- [3D Face Recognition Technology in Network Security Applications](https://aakarkale.github.io/ClaudeDesignPortfolio/papers/3D.Face.Recognition.Technology.pdf): IRJET · Vol 4, Issue 12, Dec 2017
+- [Number Plate Recognition System: A Smart City Solution](https://www.aakarkale.com/papers/Number.Plate.Recognition.System.pdf): IRJET · Vol 4, Issue 12, Dec 2017
+- [3D Face Recognition Technology in Network Security Applications](https://www.aakarkale.com/papers/3D.Face.Recognition.Technology.pdf): IRJET · Vol 4, Issue 12, Dec 2017
 
 ## Contact
 
@@ -81,4 +81,4 @@ I'm a product manager, a data engineer, a startup enthusiast, a videographer, a 
 - https://linkedin.com/in/aakarkale
 - https://x.com/aakarkale
 - https://www.youtube.com/channel/UCi_Gt1HFpBS5p3TSLlkP6Kw
-- Portfolio: https://aakarkale.github.io/ClaudeDesignPortfolio/
+- Portfolio: https://www.aakarkale.com/

@@ -17,6 +17,7 @@
 //                                 hides it first, so there is no flash.
 //   sitemap.xml                   the page plus the published papers
 //   llms.txt                      a Markdown profile (llmstxt.org)
+//   robots.txt                    allow every crawler; where the sitemap is
 //
 // Output is deterministic (no timestamps), so re-running it on
 // unchanged data leaves the working tree clean. Only edit the content
@@ -26,9 +27,11 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { AK_DATA as d } from '../src/data.js';
 
-// Single source of truth for the public URL. If the site moves to a
-// custom domain, change it here and in index.html's og:/twitter: tags.
-const SITE_URL = 'https://aakarkale.github.io/ClaudeDesignPortfolio/';
+// Single source of truth for the public URL. It must be the exact address
+// GitHub Pages serves: the custom domain set in Settings → Pages, which is
+// the www host (the old github.io URL only redirects there). If it
+// changes, change it here and in index.html's og:/twitter: tags.
+const SITE_URL = 'https://www.aakarkale.com/';
 
 const abs = (path) => new URL(path, SITE_URL).href;
 
@@ -297,6 +300,12 @@ const sitemap = [
   '',
 ].join('\n');
 
+// ─── robots.txt ─────────────────────────────────────────────────────
+// Crawlers only read robots.txt at a host's root, which this is now that
+// the site has its own domain. Every crawler is allowed (answer engines
+// included), and the sitemap's location is announced.
+const robots = ['User-agent: *', 'Allow: /', '', `Sitemap: ${abs('sitemap.xml')}`, ''].join('\n');
+
 // ─── Write ──────────────────────────────────────────────────────────
 function replaceBlock(html, name, content, indent) {
   const start = `<!-- seo:${name}:start -->`;
@@ -314,5 +323,6 @@ html = replaceBlock(html, 'static', staticBlock, '    ');
 writeFileSync('index.html', html);
 writeFileSync('llms.txt', md);
 writeFileSync('sitemap.xml', sitemap);
+writeFileSync('robots.txt', robots);
 
-console.log(`seo: index.html (head + ${staticBlock.split('\n').length}-line static mirror), llms.txt, sitemap.xml (${urls.length} urls)`);
+console.log(`seo: index.html (head + ${staticBlock.split('\n').length}-line static mirror), llms.txt, sitemap.xml (${urls.length} urls), robots.txt`);
