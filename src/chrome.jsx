@@ -166,7 +166,12 @@ export function GyroPrompt() {
     if (!DOE || typeof DOE.requestPermission !== 'function') return;
     if (window.matchMedia('(pointer: fine)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (sessionStorage.getItem('ak_motion_asked') === '1') return;
+    // Guarded: with cookies blocked (Safari "Block All Cookies", Chrome
+    // site settings) storage access throws, and an uncaught throw here
+    // unmounted the whole app — a blank page.
+    let asked = false;
+    try { asked = sessionStorage.getItem('ak_motion_asked') === '1'; } catch (e) {}
+    if (asked) return;
     const t = setTimeout(() => setState('ask'), 1500);
     return () => clearTimeout(t);
   }, [state]);
@@ -280,7 +285,126 @@ export function Topbar({ theme, onToggleTheme, onLogoLongPress, onLogoHoverChang
 }
 
 // ─── Hero ────────────────────────────────────────────────────────────
-export function Hero({ theme, data, heroMode }) {
+// One-time caption telling a new visitor the hero backdrop changes on
+// refresh. Rendered only on a fresh landing (after a refresh they've found
+// it): it fades in once the hero entrance has settled, holds, then fades
+// out and unmounts. The clock starts only while the tab is visible, so a
+// site opened in a background tab still shows it when it's looked at.
+// Decorative, so aria-hidden; it sits outside the blocks the labyrinth
+// measures, so the maze never routes around it.
+const HINT_DELAY = 2600, HINT_HOLD = 5200, HINT_FADE = 700;
+
+// Where the pill shows, decided against the real layout just before it
+// fades in. Its CSS home (bottom-right, level with the scroll cue; under
+// the CTAs on phones) can fall below the fold on short laptops, with the
+// taller light-theme title, or on small phones. So each candidate must sit
+// on the first screen, below the nav, and clear of the copy and buttons:
+//   wide screens — the CSS home, else lifted to the bottom of the screen
+//                  (the right of the column is empty below the title)
+//   phones       — centered in the gap between tagline and CTAs, else
+//                  just above the CTAs, else just below them
+// If the hero's own copy overflows the first screen and nothing fits, it
+// falls back to the home spot (on phones, centered in the strip under the
+// CTAs) and RefreshHint waits for that to be scrolled into view.
+// Returns a hero-wrap-local top in px, or null to keep the CSS home.
+function placeRefreshHint(el) {
+  const wrap = el.offsetParent;
+  if (!wrap) return null;
+  const lift = el.style.transform;
+  el.style.transform = 'none';                 // measure without the lift-in offset
+  const me = el.getBoundingClientRect();
+  el.style.transform = lift;
+  const W = wrap.getBoundingClientRect();
+  const nav = document.querySelector('.topbar');
+  const minTop = Math.max(W.top, nav ? nav.getBoundingClientRect().bottom : 0) + 8;
+  const maxBottom = Math.min(window.innerHeight, W.bottom) - 8;
+
+  // Obstacles: tight per-line boxes for the copy, whole boxes for controls.
+  const blocks = [];
+  const add = (r) => { if (r.width > 1 && r.height > 1) blocks.push(r); };
+  let subBottom = -Infinity;
+  wrap.querySelectorAll('.hero-title, .hero-sub').forEach((n) => {
+    const range = document.createRange();
+    range.selectNodeContents(n);
+    for (const r of range.getClientRects()) {
+      add(r);
+      if (n.classList.contains('hero-sub')) subBottom = Math.max(subBottom, r.bottom);
+    }
+  });
+  const ctas = Array.from(wrap.querySelectorAll('.hero-actions .btn'), (n) => n.getBoundingClientRect());
+  ctas.forEach(add);
+  wrap.querySelectorAll('.hero-meta > *, .hero-scroll').forEach((n) => add(n.getBoundingClientRect()));
+
+  const CLEAR = 10;
+  const fits = (t) => t >= minTop && t + me.height <= maxBottom && !blocks.some((r) =>
+    me.left < r.right + CLEAR && r.left - CLEAR < me.right &&
+    t < r.bottom + CLEAR && r.top - CLEAR < t + me.height);
+
+  const phone = window.matchMedia('(max-width: 640px)').matches && ctas.length > 0;
+  const ctaTop = phone ? Math.min(...ctas.map((r) => r.top)) : 0;
+  const ctaBottom = phone ? Math.max(...ctas.map((r) => r.bottom)) : 0;
+  const tries = phone
+    ? [(subBottom + ctaTop - me.height) / 2, ctaTop - 14 - me.height, ctaBottom + 12]
+    : [me.top, maxBottom - me.height];
+  for (const t of tries) {
+    if (Number.isFinite(t) && fits(t)) return Math.abs(t - me.top) < 0.5 ? null : Math.round(t - W.top);
+  }
+  return phone ? Math.round((ctaBottom + W.bottom - me.height) / 2 - W.top) : null;
+}
+
+function RefreshHint() {
+  const ref = useRef(null);
+  const [phase, setPhase] = useState('wait'); // wait → on → off → done
+  useEffect(() => {
+    const timers = [];
+    let io = null;
+    const show = () => {
+      setPhase('on');
+      timers.push(setTimeout(() => setPhase('off'), HINT_HOLD));
+      timers.push(setTimeout(() => setPhase('done'), HINT_HOLD + HINT_FADE));
+    };
+    const run = () => timers.push(setTimeout(() => {
+      const el = ref.current;
+      if (!el) return;
+      // Applied directly (not via state) so the observer below measures
+      // the final spot, not the home one.
+      const top = placeRefreshHint(el);
+      if (top != null) { el.style.top = `${top}px`; el.style.bottom = 'auto'; }
+      // Fade in once the spot is fully on screen: at once in practice; on
+      // a layout with no room on the first screen, when it's scrolled in.
+      io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.intersectionRatio >= 0.99)) { io.disconnect(); io = null; show(); }
+      }, { threshold: 0.99 });
+      io.observe(el);
+    }, HINT_DELAY));
+    const onVisible = () => {
+      if (document.visibilityState === 'hidden') return;
+      document.removeEventListener('visibilitychange', onVisible);
+      run();
+    };
+    if (document.visibilityState === 'hidden') document.addEventListener('visibilitychange', onVisible);
+    else run();
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      if (io) io.disconnect();
+      timers.forEach(clearTimeout);
+    };
+  }, []);
+
+  if (phase === 'done') return null;
+  return (
+    <div ref={ref} className={`refresh-hint${phase === 'on' ? ' on' : ''}`} aria-hidden="true">
+      <svg className="refresh-hint-icon" viewBox="0 0 24 24" width="12" height="12" fill="none"
+           stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12a9 9 0 1 1-2.64-6.36L21 8" />
+        <path d="M21 3v5h-5" />
+      </svg>
+      Refresh for a new background
+    </div>
+  );
+}
+
+export function Hero({ theme, data, heroMode, showRefreshHint }) {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
     const i = setInterval(() => setTime(new Date()), 1000 * 30);
@@ -325,6 +449,8 @@ export function Hero({ theme, data, heroMode }) {
           <span className="hero-scroll-line" />
           <span className="hero-scroll-label">scroll</span>
         </div>
+
+        {showRefreshHint && <RefreshHint />}
       </div>
     </section>
   );

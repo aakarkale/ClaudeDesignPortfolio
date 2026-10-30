@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client';
 
 import { AK_DATA } from './data.js';
 import { useTheme, useReveal, CustomCursor, Topbar, Hero, Footer } from './chrome.jsx';
-import { HERO_MODES } from './hero-modes.js';
+import { navigationType, pickHeroMode } from './hero-modes.js';
 import { About, Work, Experience, Skills, TechReel, Contact } from './sections.jsx';
 import { initMotion } from './motion.js';
 import { buzz } from './haptics.js';
@@ -64,21 +64,24 @@ function App() {
   const [konamiToast, setKonamiToast] = useState(false);
   const [lpToast, setLpToast] = useState('');
   const [logoHover, setLogoHover] = useState(false);
-  // Hero "experience" advances one step on every page load:
-  // labyrinth → dots → topo → spotlight → (repeat). Decided synchronously
-  // in the initializer so the right mode mounts on the first render —
-  // no flicker, no double init. Stale/unknown stored values (e.g. the
-  // removed 'aurora') resolve to index -1 and wrap to the first mode.
-  const [heroMode] = useState(() => {
+  // Hero "experience": a fresh landing always opens on the labyrinth, and
+  // each refresh advances one step (labyrinth → dots → topo → spotlight →
+  // repeat) — see pickHeroMode. Decided synchronously in the initializer
+  // so the right mode mounts on the first render: no flicker, no double
+  // init. `landing` gates the one-time "refresh for a new background" hint.
+  const [{ heroMode, landing }] = useState(() => {
+    const nav = navigationType();
+    let prev = null;
+    try { prev = sessionStorage.getItem('ak_hero_mode_tab'); } catch (e) {}
+    const mode = pickHeroMode(nav, prev);
+    try { sessionStorage.setItem('ak_hero_mode_tab', mode); } catch (e) {}
+    // Retire the old keys: a counter in localStorage outlived every visit,
+    // which is what parked returning visitors mid-cycle.
     try {
-      // Storage key is versioned ('_v2') so the reordered, magnetic-free
-      // rotation resets cleanly for returning visitors who were parked
-      // mid-cycle under the old key — they land on labyrinth next load.
-      const prev = localStorage.getItem('ak_hero_mode_v2');
-      const next = HERO_MODES[(HERO_MODES.indexOf(prev) + 1) % HERO_MODES.length];
-      localStorage.setItem('ak_hero_mode_v2', next);
-      return next;
-    } catch (e) { return HERO_MODES[0]; }
+      localStorage.removeItem('ak_hero_mode');
+      localStorage.removeItem('ak_hero_mode_v2');
+    } catch (e) {}
+    return { heroMode: mode, landing: nav !== 'reload' && nav !== 'back_forward' };
   });
   const data = AK_DATA;
 
@@ -138,7 +141,7 @@ function App() {
         onLogoHoverChange={setLogoHover}
       />
       <main>
-        <Hero theme={theme} data={data} heroMode={heroMode} />
+        <Hero theme={theme} data={data} heroMode={heroMode} showRefreshHint={landing} />
         <About data={data} />
         <Work data={data} projects={projectList} unlocked={konami} />
         <Experience data={data} />
