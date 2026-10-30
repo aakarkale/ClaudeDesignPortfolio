@@ -1,10 +1,10 @@
 // ====================================================================
 // Hero FX — four swappable backdrop "experiences" for the hero section.
-// The site advances to the next one on every page load (position kept in
-// localStorage — see main.jsx). Each mode is a self-contained initializer
-// that owns its own canvas drawing, listeners, observers and rAF loop,
-// and returns a single cleanup function. createHeroFX() is the small
-// controller that swaps between them.
+// A fresh landing always opens on the first one, and each refresh
+// advances to the next (see pickHeroMode). Each mode is a self-contained
+// initializer that owns its own canvas drawing, listeners, observers and
+// rAF loop, and returns a single cleanup function. createHeroFX() is the
+// small controller that swaps between them.
 //
 //   labyrinth — faint tilt-maze built around the copy; sink the ball
 //   dots      — a dot-matrix field across the hero; cursor scatters it
@@ -26,6 +26,38 @@ export const HERO_LABELS = {
   dots: 'Dot Matrix',
   labyrinth: 'Labyrinth',
 };
+
+// ── Which experience to show ──────────────────────────────────────────
+// A fresh landing (typed URL, bookmark, link click, new tab) always opens
+// on HERO_MODES[0]; each refresh advances one step; back/forward shows the
+// same one again. main.jsx keeps the position in sessionStorage, so it is
+// per tab and ends with the visit. (It used to live in localStorage with
+// no end, so anyone who had visited before landed mid-cycle.)
+
+// 'navigate' | 'reload' | 'back_forward', from the Navigation Timing API,
+// falling back to the legacy performance.navigation (Safari < 15), then
+// to 'navigate'.
+export function navigationType() {
+  try {
+    const [nav] = performance.getEntriesByType('navigation');
+    if (nav && nav.type) return nav.type;
+  } catch (e) {}
+  try {
+    const t = performance.navigation && performance.navigation.type;
+    if (t === 1) return 'reload';
+    if (t === 2) return 'back_forward';
+  } catch (e) {}
+  return 'navigate';
+}
+
+// `prev` is the mode this tab showed last, or null. An unknown value (a
+// retired mode, or storage that was cleared or blocked) restarts the cycle.
+export function pickHeroMode(navType, prev) {
+  const i = HERO_MODES.indexOf(prev);
+  if (navType === 'reload') return HERO_MODES[(i + 1) % HERO_MODES.length];
+  if (navType === 'back_forward' && i >= 0) return prev;
+  return HERO_MODES[0];
+}
 
 // ── Shared helpers ────────────────────────────────────────────────────
 const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -635,9 +667,9 @@ function initLabyrinth(host, canvas, ctx) {
   // Desktop autopilot — on a fine pointer the board plays itself: a BFS
   // through the maze from the ball's cell to the hole picks the next
   // waypoint each frame and tilts toward it (easing in near the goal so
-  // it actually sinks). The cursor still takes over when moved, then the
-  // autopilot resumes ~2.5s after the last move — the same "manual
-  // overrides ambient" handoff the gyro/Lissajous uses on mobile.
+  // it actually sinks). The cursor takes over once it's placed on the
+  // ball, and the autopilot resumes ~3s after the last move — the same
+  // "manual overrides ambient" handoff the gyro/Lissajous uses on mobile.
   let autoPath = [];
   let autoIdx = 1;
   let autoActive = false;
