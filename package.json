@@ -4,8 +4,9 @@
   "private": true,
   "description": "Aakar Kale — Senior Product Manager portfolio",
   "scripts": {
-    "build": "esbuild src/main.jsx --bundle --minify --format=iife --define:process.env.NODE_ENV=\\\"production\\\" --outfile=dist/bundle.js",
-    "dev": "esbuild src/main.jsx --bundle --format=iife --sourcemap --outfile=dist/bundle.js --watch --servedir=."
+    "build": "npm run seo && esbuild src/main.jsx --bundle --minify --format=iife --define:process.env.NODE_ENV=\\\"production\\\" --outfile=dist/bundle.js",
+    "dev": "esbuild src/main.jsx --bundle --format=iife --sourcemap --outfile=dist/bundle.js --watch --servedir=.",
+    "seo": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seo.mjs"
   },
   "dependencies": {
     "gsap": "3.15.0",

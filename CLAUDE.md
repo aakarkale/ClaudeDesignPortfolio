@@ -45,6 +45,21 @@ mirror its head structure.
 ## Deploy
 
 GitHub Pages deploy runs from `.github/workflows/deploy.yml` on every push to
-`main`. The workflow copies `index.html`, `css/`, `dist/`, `papers/`, and
-`assets/` into `_site/`. If a new top-level directory is added that needs to
-ship to Pages, update the workflow's "Stage site files" step.
+`main`. The workflow copies `index.html`, `sitemap.xml`, `llms.txt`, `css/`,
+`dist/`, `papers/`, and `assets/` into `_site/`. If a new top-level directory is
+added that needs to ship to Pages, update the workflow's "Stage site files" step.
+
+## SEO / AEO output is generated — don't hand-edit it
+
+`npm run build` runs `scripts/seo.mjs` before esbuild. It reads `src/data.js`
+and regenerates:
+
+- the `<!-- seo:head:* -->` block in `index.html` (canonical, JSON-LD)
+- the `<!-- seo:static:* -->` block inside `#root` (a static HTML mirror of the
+  page for crawlers that don't run JavaScript; React replaces it on mount)
+- `sitemap.xml` and `llms.txt`
+
+To change any of that content, edit `src/data.js` (or the generator), then run
+`npm run build` and commit the regenerated files. The public URL lives in
+`SITE_URL` at the top of the script; if the site moves to a custom domain,
+update it there and in the `og:`/`twitter:` tags in `index.html`.
